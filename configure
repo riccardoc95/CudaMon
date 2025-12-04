@@ -1,0 +1,40 @@
+#!/bin/sh
+set -e
+
+die() {
+  echo "configure: error: $*" 1>&2
+  exit 1
+}
+
+NVML_PC_FILE=$(pkg-config --variable=pcfile nvml 2>/dev/null || true)
+if [ -z "$NVML_PC_FILE" ]; then
+  NVML_PC_FILE=$(pkg-config --variable=pcfile nvidia-ml 2>/dev/null || true)
+fi
+if [ -z "$NVML_PC_FILE" ]; then
+  NVML_PC_FILE=$(ls /usr/lib/pkgconfig/nvidia-ml-*.pc 2>/dev/null | head -n1 || true)
+fi
+if [ -z "$NVML_PC_FILE" ]; then
+  die "NVML pkg-config file not found. Install the NVIDIA Management Library development package."
+fi
+
+NVML_PKG=$(basename "$NVML_PC_FILE")
+NVML_PKG=${NVML_PKG%.pc}
+
+if [ -z "$CUDA_HOME" ]; then
+  CUDA_HOME="/usr/local/cuda"
+fi
+if [ ! -d "$CUDA_HOME/include" ]; then
+  die "CUDA include directory not found under $CUDA_HOME"
+fi
+
+NVML_CFLAGS=$(pkg-config --cflags "$NVML_PKG")
+NVML_LIBS=$(pkg-config --libs "$NVML_PKG")
+CUDA_INC="-I${CUDA_HOME}/include"
+CUDA_LIBS="-L${CUDA_HOME}/lib64 -lcudart -lcuda"
+R_INCL=$("$R_HOME"/bin/R CMD config --cppflags)
+
+PKG_CPPFLAGS="${R_INCL} ${CUDA_INC} ${NVML_CFLAGS}"
+PKG_LIBS="${NVML_LIBS} ${CUDA_LIBS} ${SHLIB_LINK}"
+
+sed -e "s|@PKG_CPPFLAGS@|${PKG_CPPFLAGS}|g" -e "s|@PKG_LIBS@|${PKG_LIBS}|g" src/Makevars.in > src/Makevars
+echo "configure: generated src/Makevars"
