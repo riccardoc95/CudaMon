@@ -1,0 +1,20 @@
+Package: CudaMon
+Title: Measure resource consumption of R processes using collectl and NVML
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Gabriele",
+           family = "Sales",
+           role = "aut",
+           email = "gabriele.sales@unipd.it",
+           comment = c(ORCID = "0000-0003-2078-5661")),
+      person(given = "Mohammad Amin",
+           family = "Zadenoori", 
+           role = c("aut", "cre"),
+           email="Amin.zadenoori@gmail.com"))
+Description: Provide functions to obtain instrumentation data on
+    processes in a unix environment.  Parse output of a collectl
+    run and collect NVML metrics.  Vizualize aspects of system usage.
+License: Artistic-2.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
