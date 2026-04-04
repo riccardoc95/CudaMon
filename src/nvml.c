@@ -6,54 +6,83 @@ This software is licensed under the Artistic License 2.0.
 */
 
 #include <R.h>
+#include <R_ext/Rdynload.h>
 #include <Rinternals.h>
 #include <nvml.h>
 
-SEXP nvml_init_c(void) {
-    nvmlReturn_t result = nvmlInit_v2();
-    return ScalarInteger((int)result);
+static int nvml_is_initialized = 0;
+
+static nvmlReturn_t nvml_ensure_init(void) {
+    nvmlReturn_t result;
+
+    if (nvml_is_initialized) {
+        return NVML_SUCCESS;
+    }
+
+    result = nvmlInit_v2();
+    if (result == NVML_SUCCESS) {
+        nvml_is_initialized = 1;
+    }
+
+    return result;
 }
 
-SEXP nvml_shutdown_c(void) {
-    nvmlReturn_t result = nvmlShutdown();
-    return ScalarInteger((int)result);
+static void nvml_cleanup(void) {
+    if (!nvml_is_initialized) {
+        return;
+    }
+
+    if (nvmlShutdown() == NVML_SUCCESS) {
+        nvml_is_initialized = 0;
+    }
+}
+
+static nvmlReturn_t nvml_get_device_count(unsigned int *count) {
+    nvmlReturn_t result = nvml_ensure_init();
+    if (result != NVML_SUCCESS) {
+        return result;
+    }
+
+    return nvmlDeviceGetCount(count);
+}
+
+static nvmlReturn_t nvml_get_device(int device_index, nvmlDevice_t *device) {
+    unsigned int count = 0;
+    nvmlReturn_t result = nvml_get_device_count(&count);
+    if (result != NVML_SUCCESS) {
+        return result;
+    }
+
+    if (device_index < 0 || (unsigned int) device_index >= count) {
+        return NVML_ERROR_INVALID_ARGUMENT;
+    }
+
+    return nvmlDeviceGetHandleByIndex((unsigned int) device_index, device);
 }
 
 SEXP nvml_device_count_c(void) {
     unsigned int count = 0;
-    nvmlReturn_t result = nvmlDeviceGetCount(&count);
+    nvmlReturn_t result = nvml_get_device_count(&count);
     if (result != NVML_SUCCESS) {
-        return ScalarInteger(-(int)result);
+        return ScalarInteger(-(int) result);
     }
-    return ScalarInteger((int)count);
+    return ScalarInteger((int) count);
 }
 
 SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     int device_index = asInteger(device_index_sexp);
-    if (device_index < 0) {
-        return ScalarInteger(-NVML_ERROR_INVALID_ARGUMENT);
-    }
-
-    unsigned int count = 0;
-    nvmlReturn_t result = nvmlDeviceGetCount(&count);
-    if (result != NVML_SUCCESS) {
-        return ScalarInteger(-(int)result);
-    }
-
-    if (device_index >= count) {
-        return ScalarInteger(-NVML_ERROR_INVALID_ARGUMENT);
-    }
-
     nvmlDevice_t device;
-    result = nvmlDeviceGetHandleByIndex(device_index, &device);
+    nvmlReturn_t result = nvml_get_device(device_index, &device);
     if (result != NVML_SUCCESS) {
-        return ScalarInteger(-(int)result);
+        return ScalarInteger(-(int) result);
     }
 
     nvmlUtilization_t utilization = {NA_INTEGER, NA_INTEGER};
     unsigned int temp = NA_INTEGER;
     unsigned int power = NA_INTEGER;
     nvmlMemory_t memory_info = {0};
+    double memory_used_bytes = NA_REAL;
+    double memory_total_bytes = NA_REAL;
 
     result = nvmlDeviceGetUtilizationRates(device, &utilization);
     if (result != NVML_SUCCESS) {
@@ -72,31 +101,20 @@ SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     }
 
     result = nvmlDeviceGetMemoryInfo(device, &memory_info);
-    if (result != NVML_SUCCESS) {
-        memory_info.used = NA_REAL;
-        memory_info.total = NA_REAL;
+    if (result == NVML_SUCCESS) {
+        memory_used_bytes = (double) memory_info.used;
+        memory_total_bytes = (double) memory_info.total;
     }
 
-    SEXP metrics = PROTECT(allocVector(VECSXP, 6));
-    SEXP names   = PROTECT(allocVector(STRSXP, 6));
-
-    SET_STRING_ELT(names, 0, mkChar("gpu_util"));
-    SET_STRING_ELT(names, 1, mkChar("mem_util"));
-    SET_STRING_ELT(names, 2, mkChar("temperature"));
-    SET_STRING_ELT(names, 3, mkChar("power_usage"));
-    SET_STRING_ELT(names, 4, mkChar("memory_used"));
-    SET_STRING_ELT(names, 5, mkChar("memory_total"));
-
-    SET_VECTOR_ELT(metrics, 0, ScalarInteger(utilization.gpu));
-    SET_VECTOR_ELT(metrics, 1, ScalarInteger(utilization.memory));
-    SET_VECTOR_ELT(metrics, 2, ScalarInteger(temp));
-    SET_VECTOR_ELT(metrics, 3, ScalarInteger(power));
-    SET_VECTOR_ELT(metrics, 4, ScalarReal((double) memory_info.used));
-    SET_VECTOR_ELT(metrics, 5, ScalarReal((double)memory_info.total));
-
-    setAttrib(metrics, R_NamesSymbol, names);
-    UNPROTECT(2);
-    return metrics;
+    SEXP data = PROTECT(allocVector(VECSXP, 6));
+    SET_VECTOR_ELT(data, 0, ScalarInteger((int) utilization.gpu));
+    SET_VECTOR_ELT(data, 1, ScalarInteger((int) utilization.memory));
+    SET_VECTOR_ELT(data, 2, ScalarInteger((int) temp));
+    SET_VECTOR_ELT(data, 3, ScalarInteger((int) power));
+    SET_VECTOR_ELT(data, 4, ScalarReal(memory_used_bytes));
+    SET_VECTOR_ELT(data, 5, ScalarReal(memory_total_bytes));
+    UNPROTECT(1);
+    return data;
 }
 
 SEXP nvml_error_string_c(SEXP err_code_sexp) {
@@ -112,15 +130,18 @@ SEXP nvml_error_string_c(SEXP err_code_sexp) {
 }
 
 static const R_CallMethodDef callMethods[] = {
-    {"nvml_init_c",          (DL_FUNC) &nvml_init_c,          0},
-    {"nvml_shutdown_c",      (DL_FUNC) &nvml_shutdown_c,      0},
-    {"nvml_device_count_c",  (DL_FUNC) &nvml_device_count_c,  0},
-    {"nvml_get_metrics_c",   (DL_FUNC) &nvml_get_metrics_c,   1},
-    {"nvml_error_string_c",  (DL_FUNC) &nvml_error_string_c,  1},
+    {"nvml_device_count_c", (DL_FUNC) &nvml_device_count_c, 0},
+    {"nvml_get_metrics_c", (DL_FUNC) &nvml_get_metrics_c, 1},
+    {"nvml_error_string_c", (DL_FUNC) &nvml_error_string_c, 1},
     {NULL, NULL, 0}
 };
 
 void R_init_CudaMon(DllInfo *dll) {
     R_registerRoutines(dll, NULL, callMethods, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+}
+
+void R_unload_CudaMon(DllInfo *dll) {
+    (void) dll;
+    nvml_cleanup();
 }
