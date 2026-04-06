@@ -75,6 +75,12 @@ static SEXP nvml_alloc_metrics(void) {
 }
 
 #ifdef HAVE_NVML
+SEXP nvml_is_available_c(void) {
+    unsigned int count = 0;
+    nvmlReturn_t result = nvml_get_device_count(&count);
+    return ScalarLogical(result == NVML_SUCCESS);
+}
+
 SEXP nvml_device_count_c(void) {
     unsigned int count = 0;
     nvmlReturn_t result = nvml_get_device_count(&count);
@@ -144,6 +150,10 @@ SEXP nvml_error_string_c(SEXP err_code_sexp) {
     return mkString(msg);
 }
 #else
+SEXP nvml_is_available_c(void) {
+    return ScalarLogical(0);
+}
+
 SEXP nvml_device_count_c(void) {
     return ScalarInteger(0);
 }
@@ -160,6 +170,7 @@ SEXP nvml_error_string_c(SEXP err_code_sexp) {
 #endif
 
 static const R_CallMethodDef callMethods[] = {
+    {"nvml_is_available_c", (DL_FUNC) &nvml_is_available_c, 0},
     {"nvml_device_count_c", (DL_FUNC) &nvml_device_count_c, 0},
     {"nvml_get_metrics_c", (DL_FUNC) &nvml_get_metrics_c, 1},
     {"nvml_error_string_c", (DL_FUNC) &nvml_error_string_c, 1},
