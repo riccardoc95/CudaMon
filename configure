@@ -1,40 +1,50 @@
 #!/bin/sh
 set -e
 
-die() {
-  echo "configure: error: $*" 1>&2
+R_BIN="${R_HOME:+$R_HOME/bin/R}"
+if [ -z "$R_BIN" ] || [ ! -x "$R_BIN" ]; then
+  R_BIN=$(command -v R || true)
+fi
+
+if [ -z "$R_BIN" ]; then
+  echo "configure: error: R executable not found" 1>&2
   exit 1
-}
-
-NVML_PC_FILE=$(pkg-config --variable=pcfile nvml 2>/dev/null || true)
-if [ -z "$NVML_PC_FILE" ]; then
-  NVML_PC_FILE=$(pkg-config --variable=pcfile nvidia-ml 2>/dev/null || true)
-fi
-if [ -z "$NVML_PC_FILE" ]; then
-  NVML_PC_FILE=$(ls /usr/lib/pkgconfig/nvidia-ml-*.pc 2>/dev/null | head -n1 || true)
-fi
-if [ -z "$NVML_PC_FILE" ]; then
-  die "NVML pkg-config file not found. Install the NVIDIA Management Library development package."
 fi
 
-NVML_PKG=$(basename "$NVML_PC_FILE")
-NVML_PKG=${NVML_PKG%.pc}
+R_INCL=$("$R_BIN" CMD config --cppflags)
 
-if [ -z "$CUDA_HOME" ]; then
-  CUDA_HOME="/usr/local/cuda"
+HAVE_NVML=0
+NVML_CFLAGS=
+NVML_LIBS=
+
+if pkg-config --exists nvml 2>/dev/null; then
+  NVML_CFLAGS=$(pkg-config --cflags nvml)
+  NVML_LIBS=$(pkg-config --libs nvml)
+  HAVE_NVML=1
+elif pkg-config --exists nvidia-ml 2>/dev/null; then
+  NVML_CFLAGS=$(pkg-config --cflags nvidia-ml)
+  NVML_LIBS=$(pkg-config --libs nvidia-ml)
+  HAVE_NVML=1
+elif [ -n "${NVML_INCLUDE_DIR:-}" ] && [ -n "${NVML_LIB_DIR:-}" ] && \
+     [ -f "${NVML_INCLUDE_DIR}/nvml.h" ]; then
+  NVML_CFLAGS="-I${NVML_INCLUDE_DIR}"
+  NVML_LIBS="-L${NVML_LIB_DIR} -lnvidia-ml"
+  HAVE_NVML=1
 fi
-if [ ! -d "$CUDA_HOME/include" ]; then
-  die "CUDA include directory not found under $CUDA_HOME"
+
+if [ "$HAVE_NVML" -eq 1 ]; then
+  echo "configure: NVML support enabled"
+  PKG_CPPFLAGS="${R_INCL} ${NVML_CFLAGS} -DHAVE_NVML=1"
+  PKG_LIBS="${NVML_LIBS} ${SHLIB_LINK}"
+else
+  echo "configure: NVML support disabled; building stub implementation"
+  PKG_CPPFLAGS="${R_INCL}"
+  PKG_LIBS="${SHLIB_LINK}"
 fi
 
-NVML_CFLAGS=$(pkg-config --cflags "$NVML_PKG")
-NVML_LIBS=$(pkg-config --libs "$NVML_PKG")
-CUDA_INC="-I${CUDA_HOME}/include"
-CUDA_LIBS="-L${CUDA_HOME}/lib64 -lcudart -lcuda"
-R_INCL=$("$R_HOME"/bin/R CMD config --cppflags)
+sed \
+  -e "s|@PKG_CPPFLAGS@|${PKG_CPPFLAGS}|g" \
+  -e "s|@PKG_LIBS@|${PKG_LIBS}|g" \
+  src/Makevars.in > src/Makevars
 
-PKG_CPPFLAGS="${R_INCL} ${CUDA_INC} ${NVML_CFLAGS}"
-PKG_LIBS="${NVML_LIBS} ${CUDA_LIBS} ${SHLIB_LINK}"
-
-sed -e "s|@PKG_CPPFLAGS@|${PKG_CPPFLAGS}|g" -e "s|@PKG_LIBS@|${PKG_LIBS}|g" src/Makevars.in > src/Makevars
 echo "configure: generated src/Makevars"

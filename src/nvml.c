@@ -1,15 +1,16 @@
 /*
 Copyright (c) 2025 Mohammad Amin Zadenoori
 Copyright (c) 2025 Gabriele Sales
-
-This software is licensed under the Artistic License 2.0.
 */
 
 #include <R.h>
 #include <R_ext/Rdynload.h>
 #include <Rinternals.h>
+#ifdef HAVE_NVML
 #include <nvml.h>
+#endif
 
+#ifdef HAVE_NVML
 static int nvml_is_initialized = 0;
 
 static nvmlReturn_t nvml_ensure_init(void) {
@@ -59,7 +60,21 @@ static nvmlReturn_t nvml_get_device(int device_index, nvmlDevice_t *device) {
 
     return nvmlDeviceGetHandleByIndex((unsigned int) device_index, device);
 }
+#endif
 
+static SEXP nvml_alloc_metrics(void) {
+    SEXP data = PROTECT(allocVector(VECSXP, 6));
+    SET_VECTOR_ELT(data, 0, ScalarInteger(NA_INTEGER));
+    SET_VECTOR_ELT(data, 1, ScalarInteger(NA_INTEGER));
+    SET_VECTOR_ELT(data, 2, ScalarInteger(NA_INTEGER));
+    SET_VECTOR_ELT(data, 3, ScalarInteger(NA_INTEGER));
+    SET_VECTOR_ELT(data, 4, ScalarReal(NA_REAL));
+    SET_VECTOR_ELT(data, 5, ScalarReal(NA_REAL));
+    UNPROTECT(1);
+    return data;
+}
+
+#ifdef HAVE_NVML
 SEXP nvml_device_count_c(void) {
     unsigned int count = 0;
     nvmlReturn_t result = nvml_get_device_count(&count);
@@ -128,6 +143,21 @@ SEXP nvml_error_string_c(SEXP err_code_sexp) {
     }
     return mkString(msg);
 }
+#else
+SEXP nvml_device_count_c(void) {
+    return ScalarInteger(0);
+}
+
+SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
+    (void) device_index_sexp;
+    return nvml_alloc_metrics();
+}
+
+SEXP nvml_error_string_c(SEXP err_code_sexp) {
+    (void) err_code_sexp;
+    return mkString("NVML support is not available in this build");
+}
+#endif
 
 static const R_CallMethodDef callMethods[] = {
     {"nvml_device_count_c", (DL_FUNC) &nvml_device_count_c, 0},
@@ -143,5 +173,7 @@ void R_init_CudaMon(DllInfo *dll) {
 
 void R_unload_CudaMon(DllInfo *dll) {
     (void) dll;
+#ifdef HAVE_NVML
     nvml_cleanup();
+#endif
 }
