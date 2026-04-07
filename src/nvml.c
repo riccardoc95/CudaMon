@@ -10,7 +10,27 @@ Copyright (c) 2025 Gabriele Sales
 #include <nvml.h>
 #endif
 
+/* SUPPORT NVML */
 #ifdef HAVE_NVML
+
+/* SUPPORT MULTIPLE NVML HEADERS */
+#ifndef NVML_GPU_INSTANCE_ID_NONE
+#ifdef INVALID_GPU_INSTANCE_ID
+#define NVML_GPU_INSTANCE_ID_NONE INVALID_GPU_INSTANCE_ID
+#else
+#define NVML_GPU_INSTANCE_ID_NONE 0xFFFFFFFFU
+#endif
+#endif
+
+#ifndef NVML_COMPUTE_INSTANCE_ID_NONE
+#ifdef INVALID_COMPUTE_INSTANCE_ID
+#define NVML_COMPUTE_INSTANCE_ID_NONE INVALID_COMPUTE_INSTANCE_ID
+#else
+#define NVML_COMPUTE_INSTANCE_ID_NONE 0xFFFFFFFFU
+#endif
+#endif
+
+/* HELP FUNCTIONS */
 static int nvml_is_initialized = 0;
 
 static nvmlReturn_t nvml_ensure_init(void) {
@@ -61,6 +81,17 @@ static nvmlReturn_t nvml_get_device(int device_index, nvmlDevice_t *device) {
     return nvmlDeviceGetHandleByIndex((unsigned int) device_index, device);
 }
 #endif
+
+static SEXP nvml_alloc_process_info(R_xlen_t n) {
+    SEXP data = PROTECT(allocVector(VECSXP, 5));
+    SET_VECTOR_ELT(data, 0, allocVector(INTSXP, n));
+    SET_VECTOR_ELT(data, 1, allocVector(INTSXP, n));
+    SET_VECTOR_ELT(data, 2, allocVector(REALSXP, n));
+    SET_VECTOR_ELT(data, 3, allocVector(INTSXP, n));
+    SET_VECTOR_ELT(data, 4, allocVector(INTSXP, n));
+    UNPROTECT(1);
+    return data;
+}
 
 static SEXP nvml_alloc_metrics(void) {
     SEXP data = PROTECT(allocVector(VECSXP, 6));
@@ -122,6 +153,62 @@ SEXP nvml_device_info_c(SEXP device_index_sexp) {
     SET_VECTOR_ELT(data, 1, mkString(name));
     SET_VECTOR_ELT(data, 2, mkString(uuid));
     SET_VECTOR_ELT(data, 3, ScalarReal((double) memory_info.total));
+    UNPROTECT(1);
+    return data;
+}
+
+SEXP nvml_device_compute_processes_c(SEXP device_index_sexp) {
+    int device_index = asInteger(device_index_sexp);
+    nvmlDevice_t device;
+    nvmlReturn_t result = nvml_get_device(device_index, &device);
+    if (result != NVML_SUCCESS) {
+        return ScalarInteger(-(int) result);
+    }
+
+    unsigned int info_count = 0;
+    /* First call asks NVML how many process records are currently available. */
+    result = nvmlDeviceGetComputeRunningProcesses(device, &info_count, NULL);
+    if (result == NVML_ERROR_NOT_SUPPORTED) {
+        return nvml_alloc_process_info(0);
+    }
+    if (result != NVML_SUCCESS && result != NVML_ERROR_INSUFFICIENT_SIZE) {
+        return ScalarInteger(-(int) result);
+    }
+    if (info_count == 0) {
+        return nvml_alloc_process_info(0);
+    }
+
+    nvmlProcessInfo_t *infos = (nvmlProcessInfo_t *) R_Calloc(info_count, nvmlProcessInfo_t);
+    /* Second call fills the caller-allocated buffer returned by the size probe above. */
+    result = nvmlDeviceGetComputeRunningProcesses(device, &info_count, infos);
+    if (result == NVML_ERROR_NOT_SUPPORTED) {
+        R_Free(infos);
+        return nvml_alloc_process_info(0);
+    }
+    if (result != NVML_SUCCESS) {
+        R_Free(infos);
+        return ScalarInteger(-(int) result);
+    }
+
+    SEXP data = PROTECT(nvml_alloc_process_info((R_xlen_t) info_count));
+    int *device_col = INTEGER(VECTOR_ELT(data, 0));
+    int *pid_col = INTEGER(VECTOR_ELT(data, 1));
+    double *used_mem_col = REAL(VECTOR_ELT(data, 2));
+    int *gpu_instance_col = INTEGER(VECTOR_ELT(data, 3));
+    int *compute_instance_col = INTEGER(VECTOR_ELT(data, 4));
+
+    for (unsigned int i = 0; i < info_count; ++i) {
+        device_col[i] = device_index;
+        pid_col[i] = (int) infos[i].pid;
+        used_mem_col[i] = infos[i].usedGpuMemory == NVML_VALUE_NOT_AVAILABLE ?
+            NA_REAL : (double) infos[i].usedGpuMemory;
+        gpu_instance_col[i] = infos[i].gpuInstanceId == NVML_GPU_INSTANCE_ID_NONE ?
+            NA_INTEGER : (int) infos[i].gpuInstanceId;
+        compute_instance_col[i] = infos[i].computeInstanceId == NVML_COMPUTE_INSTANCE_ID_NONE ?
+            NA_INTEGER : (int) infos[i].computeInstanceId;
+    }
+
+    R_Free(infos);
     UNPROTECT(1);
     return data;
 }
@@ -200,6 +287,11 @@ SEXP nvml_device_info_c(SEXP device_index_sexp) {
     return R_NilValue;
 }
 
+SEXP nvml_device_compute_processes_c(SEXP device_index_sexp) {
+    (void) device_index_sexp;
+    return nvml_alloc_process_info(0);
+}
+
 SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     (void) device_index_sexp;
     return nvml_alloc_metrics();
@@ -215,6 +307,7 @@ static const R_CallMethodDef callMethods[] = {
     {"nvml_is_available_c", (DL_FUNC) &nvml_is_available_c, 0},
     {"nvml_device_count_c", (DL_FUNC) &nvml_device_count_c, 0},
     {"nvml_device_info_c", (DL_FUNC) &nvml_device_info_c, 1},
+    {"nvml_device_compute_processes_c", (DL_FUNC) &nvml_device_compute_processes_c, 1},
     {"nvml_get_metrics_c", (DL_FUNC) &nvml_get_metrics_c, 1},
     {"nvml_error_string_c", (DL_FUNC) &nvml_error_string_c, 1},
     {NULL, NULL, 0}
