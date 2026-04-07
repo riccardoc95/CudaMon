@@ -74,3 +74,90 @@ nvml_as_metrics <- function(res) {
     )
   )
 }
+
+# Resolve the full PID set for a root process, optionally including descendants.
+process_tree_pids <- function(pid, include_descendants = TRUE) {
+  pid <- as.integer(pid)
+  if (!include_descendants) {
+    return(pid)
+  }
+
+  ps_output <- tryCatch(
+    system2("ps", c("-e", "-o", "pid=", "-o", "ppid="), stdout = TRUE, stderr = FALSE),
+    warning = function(...) character(),
+    error = function(...) character()
+  )
+
+  if (length(ps_output) == 0L) {
+    return(pid)
+  }
+
+  proc_table <- tryCatch(
+    utils::read.table(
+      text = ps_output,
+      col.names = c("pid", "ppid"),
+      stringsAsFactors = FALSE
+    ),
+    error = function(...) NULL
+  )
+
+  if (is.null(proc_table) || nrow(proc_table) == 0L) {
+    return(pid)
+  }
+
+  seen <- pid
+  frontier <- pid
+
+  # Walk the process tree breadth-first so child processes can be monitored too.
+  while (length(frontier) > 0L) {
+    children <- proc_table$pid[proc_table$ppid %in% frontier]
+    children <- setdiff(unique(as.integer(children)), seen)
+    if (length(children) == 0L) {
+      break
+    }
+
+    seen <- c(seen, children)
+    frontier <- children
+  }
+
+  as.integer(seen)
+}
+
+# Filter NVML compute processes down to a root PID and its descendants.
+nvml_list_r_compute_processes <- function(pid, include_descendants = TRUE, device_index = NULL) {
+  if (!is.numeric(pid) || length(pid) != 1L || is.na(pid)) {
+    stop("pid must be a single numeric value", call. = FALSE)
+  }
+
+  root_pid <- as.integer(pid)
+  tracked_pids <- process_tree_pids(root_pid, include_descendants = include_descendants)
+  process_df <- nvml_list_compute_processes(device_index = device_index, pid = tracked_pids)
+
+  if (nrow(process_df) == 0L) {
+    return(data.frame(
+      device_index = integer(),
+      pid = integer(),
+      tracked_pid = integer(),
+      is_root_pid = logical(),
+      used_gpu_memory_bytes = double(),
+      gpu_instance_id = integer(),
+      compute_instance_id = integer(),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  process_df$tracked_pid <- as.integer(process_df$pid)
+  process_df$is_root_pid <- process_df$tracked_pid == root_pid
+  process_df <- process_df[, c(
+    "device_index",
+    "pid",
+    "tracked_pid",
+    "is_root_pid",
+    "used_gpu_memory_bytes",
+    "gpu_instance_id",
+    "compute_instance_id"
+  )]
+  rownames(process_df) <- NULL
+
+  process_df
+}
