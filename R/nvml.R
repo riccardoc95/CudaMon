@@ -12,6 +12,14 @@ nvml_device_count <- function() {
   as.integer(cnt)
 }
 
+#' Check whether NVML is available
+#'
+#' @return `TRUE` if NVML can be initialised and queried, otherwise `FALSE`
+#' @export
+nvml_is_available <- function() {
+  isTRUE(.Call("nvml_is_available_c", PACKAGE = "CudaMon"))
+}
+
 #' Get metrics for a device
 #'
 #' @param device_index Integer, 0-based GPU index
