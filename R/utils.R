@@ -18,6 +18,21 @@ nvml_check_status <- function(code) {
   stop(sprintf("NVML error: %s (code: %d)", msg, nvml_code), call. = FALSE)
 }
 
+# Convert the C return payload for a single device into a one-row data frame.
+nvml_as_device_df <- function(res) {
+  if (is.integer(res) && length(res) == 1L && res < 0L) {
+    nvml_check_status(res)
+  }
+
+  data.frame(
+    device_index = as.integer(res[[1L]]),
+    name = as.character(res[[2L]]),
+    uuid = as.character(res[[3L]]),
+    memory_total_bytes = as.double(res[[4L]]),
+    stringsAsFactors = FALSE
+  )
+}
+
 # Normalize the metrics payload returned by C into a named R list.
 nvml_as_metrics <- function(res) {
   if (is.integer(res) && length(res) == 1L && res < 0L) {

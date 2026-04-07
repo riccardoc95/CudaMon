@@ -20,6 +20,30 @@ nvml_is_available <- function() {
   isTRUE(.Call("nvml_is_available_c", PACKAGE = "CudaMon"))
 }
 
+#' List NVML-visible devices
+#'
+#' @return A data frame with one row per GPU and stable device metadata
+#' @export
+nvml_list_devices <- function() {
+  count <- nvml_device_count()
+
+  if (count == 0L) {
+    return(data.frame(
+      device_index = integer(),
+      name = character(),
+      uuid = character(),
+      memory_total_bytes = double(),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  devices <- lapply(seq_len(count) - 1L, function(idx) {
+    nvml_as_device_df(.Call("nvml_device_info_c", idx, PACKAGE = "CudaMon"))
+  })
+
+  do.call(rbind, devices)
+}
+
 #' Get metrics for a device
 #'
 #' @param device_index Integer, 0-based GPU index
