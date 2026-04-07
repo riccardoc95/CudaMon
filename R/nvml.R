@@ -44,6 +44,59 @@ nvml_list_devices <- function() {
   do.call(rbind, devices)
 }
 
+#' List compute processes active on NVML-visible GPUs
+#'
+#' @param device_index Optional integer GPU index. If `NULL`, query all devices.
+#' @param pid Optional integer vector used to filter the returned processes.
+#' @return A data frame with one row per GPU process observation
+#' @export
+nvml_list_compute_processes <- function(device_index = NULL, pid = NULL) {
+  if (is.null(device_index)) {
+    indices <- seq_len(nvml_device_count()) - 1L
+  } else {
+    if (!is.numeric(device_index)) {
+      stop("device_index must be NULL or a numeric vector", call. = FALSE)
+    }
+    indices <- as.integer(device_index)
+  }
+
+  if (length(indices) == 0L) {
+    return(data.frame(
+      device_index = integer(),
+      pid = integer(),
+      used_gpu_memory_bytes = double(),
+      gpu_instance_id = integer(),
+      compute_instance_id = integer(),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  process_frames <- lapply(indices, function(idx) {
+    nvml_as_process_df(.Call(
+      "nvml_device_compute_processes_c",
+      as.integer(idx),
+      PACKAGE = "CudaMon"
+    ))
+  })
+
+  process_df <- do.call(rbind, process_frames)
+  rownames(process_df) <- NULL
+
+  if (nrow(process_df) == 0L) {
+    return(process_df)
+  }
+
+  if (!is.null(pid)) {
+    if (!is.numeric(pid)) {
+      stop("pid must be NULL or a numeric vector", call. = FALSE)
+    }
+    process_df <- process_df[process_df$pid %in% as.integer(pid), , drop = FALSE]
+    rownames(process_df) <- NULL
+  }
+
+  process_df
+}
+
 #' Get metrics for a device
 #'
 #' @param device_index Integer, 0-based GPU index

@@ -33,6 +33,22 @@ nvml_as_device_df <- function(res) {
   )
 }
 
+# Convert the C return payload for GPU compute processes into tabular form.
+nvml_as_process_df <- function(res) {
+  if (is.integer(res) && length(res) == 1L && res < 0L) {
+    nvml_check_status(res)
+  }
+
+  data.frame(
+    device_index = as.integer(res[[1L]]),
+    pid = as.integer(res[[2L]]),
+    used_gpu_memory_bytes = as.double(res[[3L]]),
+    gpu_instance_id = as.integer(res[[4L]]),
+    compute_instance_id = as.integer(res[[5L]]),
+    stringsAsFactors = FALSE
+  )
+}
+
 # Normalize the metrics payload returned by C into a named R list.
 nvml_as_metrics <- function(res) {
   if (is.integer(res) && length(res) == 1L && res < 0L) {
