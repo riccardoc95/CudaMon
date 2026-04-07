@@ -90,6 +90,42 @@ SEXP nvml_device_count_c(void) {
     return ScalarInteger((int) count);
 }
 
+SEXP nvml_device_info_c(SEXP device_index_sexp) {
+    int device_index = asInteger(device_index_sexp);
+    nvmlDevice_t device;
+    nvmlReturn_t result = nvml_get_device(device_index, &device);
+    if (result != NVML_SUCCESS) {
+        return ScalarInteger(-(int) result);
+    }
+
+    char name[NVML_DEVICE_NAME_BUFFER_SIZE] = {0};
+    char uuid[NVML_DEVICE_UUID_BUFFER_SIZE] = {0};
+    nvmlMemory_t memory_info = {0};
+
+    result = nvmlDeviceGetName(device, name, sizeof(name));
+    if (result != NVML_SUCCESS) {
+        return ScalarInteger(-(int) result);
+    }
+
+    result = nvmlDeviceGetUUID(device, uuid, sizeof(uuid));
+    if (result != NVML_SUCCESS) {
+        return ScalarInteger(-(int) result);
+    }
+
+    result = nvmlDeviceGetMemoryInfo(device, &memory_info);
+    if (result != NVML_SUCCESS) {
+        return ScalarInteger(-(int) result);
+    }
+
+    SEXP data = PROTECT(allocVector(VECSXP, 4));
+    SET_VECTOR_ELT(data, 0, ScalarInteger(device_index));
+    SET_VECTOR_ELT(data, 1, mkString(name));
+    SET_VECTOR_ELT(data, 2, mkString(uuid));
+    SET_VECTOR_ELT(data, 3, ScalarReal((double) memory_info.total));
+    UNPROTECT(1);
+    return data;
+}
+
 SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     int device_index = asInteger(device_index_sexp);
     nvmlDevice_t device;
@@ -158,6 +194,12 @@ SEXP nvml_device_count_c(void) {
     return ScalarInteger(0);
 }
 
+SEXP nvml_device_info_c(SEXP device_index_sexp) {
+    (void) device_index_sexp;
+    Rf_error("NVML support is not available in this build");
+    return R_NilValue;
+}
+
 SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     (void) device_index_sexp;
     return nvml_alloc_metrics();
@@ -172,6 +214,7 @@ SEXP nvml_error_string_c(SEXP err_code_sexp) {
 static const R_CallMethodDef callMethods[] = {
     {"nvml_is_available_c", (DL_FUNC) &nvml_is_available_c, 0},
     {"nvml_device_count_c", (DL_FUNC) &nvml_device_count_c, 0},
+    {"nvml_device_info_c", (DL_FUNC) &nvml_device_info_c, 1},
     {"nvml_get_metrics_c", (DL_FUNC) &nvml_get_metrics_c, 1},
     {"nvml_error_string_c", (DL_FUNC) &nvml_error_string_c, 1},
     {NULL, NULL, 0}
