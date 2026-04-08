@@ -26,3 +26,7 @@ R -q -e 'Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate
 R -q -e 'Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); torch <- import("torch"); torch$cuda$is_available()'
 
 R -q -e '.libPaths(c(path.expand("~/R/library"), .libPaths())); Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); py_config(); torch <- import("torch"); torch$cuda$is_available(); source("tests/manual/torch.R")'
+
+
+R -q -e '.libPaths(c(path.expand("~/R/library"), .libPaths())); install.packages("testthat", repos = "https://cloud.r-project.org")'
+R -q -e "library(CudaMon); library(testthat); testthat::test_dir('tests/testthat')"

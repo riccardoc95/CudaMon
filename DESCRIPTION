@@ -1,14 +1,14 @@
 Package: CudaMon
 Title: Measure resource consumption of R processes using collectl and NVML
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     c(person(given = "Gabriele",
            family = "Sales",
            role = "aut",
            email = "gabriele.sales@unipd.it",
            comment = c(ORCID = "0000-0003-2078-5661")),
       person(given = "Mohammad Amin",
-           family = "Zadenoori", 
+           family = "Zadenoori",
            role = c("aut", "cre"),
            email="Amin.zadenoori@gmail.com"))
 Description: Provide functions to obtain instrumentation data on
@@ -21,3 +21,7 @@ RoxygenNote: 7.3.3
 Imports:
     ggplot2,
     processx
+Suggests:
+    testthat (>= 3.0.0)
+    reticulate
+Config/testthat/edition: 3
