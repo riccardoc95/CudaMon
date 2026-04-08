@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+if ! command -v R >/dev/null 2>&1; then
+  echo "R executable not found" 1>&2
+  exit 1
+fi
+
+rm -rf ~/R/library
+mkdir -p ~/R/library
+export R_LIBS_USER=~/R/library
+
+export NVML_INCLUDE_DIR=/software/spack/linux-zen4/cuda-13.1.1-5qrd5fdnw2vmklpq7pwz5ht4gwrvhgkb/include
+export NVML_LIB_DIR=/software/spack/linux-zen4/cuda-13.1.1-5qrd5fdnw2vmklpq7pwz5ht4gwrvhgkb/targets/x86_64-linux/lib/stubs/
+
+R -q -e 'if (!requireNamespace("roxygen2", quietly = TRUE)) install.packages("roxygen2", repos = "https://cloud.r-project.org")'
+R -q -e 'if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2", repos = "https://cloud.r-project.org")'
+R -q -e 'if (!requireNamespace("processx", quietly = TRUE)) install.packages("processx", repos = "https://cloud.r-project.org")'
+R -q -e 'roxygen2::roxygenise()'
+R CMD INSTALL .
+R -q -e 'library(CudaMon); x <- nvml_is_available(); cat("NVML available:", if (isTRUE(x)) "yes" else "no", "\n")'
+R -q -e 'library(CudaMon); n <- nvml_device_count(); cat("Detected GPUs:", n, "\n")'
+
+R -q -e 'install.packages("reticulate", repos = "https://cloud.r-project.org")'
+R -q -e 'Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); py_config()'
+R -q -e 'Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); torch <- import("torch"); torch$cuda$is_available()'
+
+R -q -e '.libPaths(c(path.expand("~/R/library"), .libPaths())); Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); py_config(); torch <- import("torch"); torch$cuda$is_available(); source("tests/manual/torch.R")'
