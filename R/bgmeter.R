@@ -127,6 +127,32 @@ nvml_sample_start <- function(
   )
 }
 
+#' Record a workflow step during an active NVML sampling session
+#'
+#' @param sampler A sampler object returned by `nvml_sample_start()`.
+#' @param step A short label identifying the current workflow step.
+#' @return Invisibly returns the sampler.
+#' @export
+nvml_mark_step <- function(sampler, step) {
+  if (!inherits(sampler, "nvml_sampler")) {
+    stop("sampler must inherit from 'nvml_sampler'", call. = FALSE)
+  }
+
+  if (!is.character(step) || length(step) != 1L || !nzchar(step)) {
+    stop("step must be a single non-empty string", call. = FALSE)
+  }
+
+  event_row <- data.frame(
+    timestamp = format(Sys.time(), tz = "UTC", usetz = TRUE),
+    root_pid = as.integer(sampler$root_pid),
+    step = step,
+    stringsAsFactors = FALSE
+  )
+
+  append_csv(event_row, sampler$paths$events)
+  invisible(sampler)
+}
+
 #' Stop an NVML background sampler
 #'
 #' @param sampler A sampler object returned by `nvml_sample_start()`.
@@ -147,6 +173,47 @@ nvml_sample_stop <- function(sampler) {
     kill_process(sampler$process)
   }
   invisible(sampler)
+}
+
+#' Read CSV output produced by the NVML sampler
+#'
+#' @param sampler A sampler object returned by `nvml_sample_start()`, or a
+#'   character path prefix used to build the sampler output paths.
+#' @return A `CudaMonSession` object.
+#' @export
+nvml_sample_read <- function(sampler) {
+  if (inherits(sampler, "nvml_sampler")) {
+    device_metrics_path <- sampler$paths$device_metrics
+    compute_processes_path <- sampler$paths$compute_processes
+    events_path <- sampler$paths$events
+    log_path <- sampler$paths$log
+    metadata <- list(
+      root_pid = sampler$root_pid,
+      include_descendants = sampler$include_descendants,
+      device_index = sampler$device_index
+    )
+  } else if (is.character(sampler) && length(sampler) == 1L && nzchar(sampler)) {
+    device_metrics_path <- paste0(sampler, "_device_metrics.csv")
+    compute_processes_path <- paste0(sampler, "_compute_processes.csv")
+    events_path <- paste0(sampler, "_events.csv")
+    log_path <- paste0(sampler, "_sampler.log")
+    metadata <- list()
+  } else {
+    stop("sampler must be an 'nvml_sampler' object or a path prefix", call. = FALSE)
+  }
+
+  CudaMonSession(
+    device_metrics = read_sampler_csv(device_metrics_path),
+    compute_processes = read_sampler_csv(compute_processes_path),
+    events = read_sampler_csv(events_path),
+    paths = list(
+      device_metrics = device_metrics_path,
+      compute_processes = compute_processes_path,
+      events = events_path,
+      log = log_path
+    ),
+    metadata = metadata
+  )
 }
 
 kill_process <- function(proc) {
@@ -171,6 +238,18 @@ sampler_env <- function(lib_paths) {
 
 default_sampler_prefix <- function(pid) {
   tempfile(pattern = sprintf("cudamon-%d-", as.integer(pid)))
+}
+
+append_csv <- function(x, path) {
+  utils::write.table(
+    x,
+    file = path,
+    sep = ",",
+    row.names = FALSE,
+    col.names = !file.exists(path),
+    append = file.exists(path),
+    qmethod = "double"
+  )
 }
 
 nvml_sampler_args <- function(
