@@ -140,6 +140,7 @@ nvml_as_metrics <- function(res) {
   )
 }
 
+
 # Resolve the full PID set for a root process, optionally including descendants.
 process_tree_pids <- function(pid, include_descendants = TRUE) {
   pid <- as.integer(pid)

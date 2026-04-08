@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Gabriele Sales
 #
 
-#' Number of NVML-visible devices
+#' Number of NVML‑visible devices
 #' @export
 nvml_device_count <- function() {
   cnt <- .Call("nvml_device_count_c", PACKAGE = "CudaMon")
@@ -43,6 +43,7 @@ nvml_list_devices <- function() {
 
   do.call(rbind, devices)
 }
+
 
 #' List compute processes active on NVML-visible GPUs
 #'
@@ -97,9 +98,10 @@ nvml_list_compute_processes <- function(device_index = NULL, pid = NULL) {
   process_df
 }
 
+
 #' Get metrics for a device
 #'
-#' @param device_index Integer, 0-based GPU index
+#' @param device_index Integer, 0‑based GPU index
 #' @return A named list with utilization percentages, temperature in Celsius,
 #'   power draw in milliwatts, and memory usage in bytes
 #' @export
@@ -111,6 +113,7 @@ nvml_get_metrics <- function(device_index) {
 
   nvml_as_metrics(.Call("nvml_get_metrics_c", idx, PACKAGE = "CudaMon"))
 }
+
 
 #' Demo function showing typical usage
 #' @export

@@ -1,0 +1,207 @@
+---
+title: "Rcollectl"
+author: 
+  - name: Vince Carey
+    affiliation:
+    - Harvard Medical School
+    email: stvjc@channing.harvard.edu
+  - name: Yubo Cheng
+    affiliation:
+    - Roswell Park Comprehensive Cancer Center
+    email: yubo.cheng@roswellpark.org
+output: 
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: show
+date: "`r doc_date()`"
+package: "`r pkg_ver('Rcollectl')`"
+vignette: >
+  %\VignetteIndexEntry{Rcollectl}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
+)
+```
+
+
+```{r vignetteSetup, echo=FALSE, message=FALSE, warning = FALSE}
+## Track time spent on making the vignette
+startTime <- Sys.time()
+
+## Bib setup
+library("knitcitations")
+
+## Load knitcitations with a clean bibliography
+cleanbib()
+cite_options(hyperlink = "to.doc", citation_format = "text", style = "html")
+
+## Write bibliography information
+bib <- c(
+    R = citation(),
+    BiocStyle = citation("BiocStyle")[1],
+    knitcitations = citation("knitcitations")[1],
+    knitr = citation("knitr")[1],
+    rmarkdown = citation("rmarkdown")[1],
+    sessioninfo = citation("sessioninfo")[1],
+    testthat = citation("testthat")[1],
+    Rcollectl = citation("Rcollectl")[1]
+)
+
+write.bibtex(bib, file = "Rcollectl.bib")
+```
+
+# Quick start for `Rcollectl`
+
+```{r "start", message=FALSE}
+library("Rcollectl")
+```
+[Collectl](https://collectl.sourceforge.net/) is
+a unix-based tool that will perform measurements on system resource 
+consumption of various types.  We provide a demonstration
+output with the package:
+
+```{r lkdemo}
+lk = cl_parse(system.file("demotab/demo_1123.tab.gz", package="Rcollectl"))
+dim(lk)
+attr(lk, "meta")
+lk[1:5,1:5]
+```
+
+
+```{r lkviz}
+plot_usage(lk)
+```
+
+From this display, we can see that about a burst of network activity
+around 14:43 is followed by consumption of CPU, memory, and disk resources.
+The % CPU active never exceeds 30, memory consumption started relatively
+high when sampling began, growing to about 15.5 GB. and 250MB were written
+to disk over the entire interval.
+
+To generate a display like this, we use commands shown below.  You can
+use an arbitrary string as `[target file prefix]`.  Thus `cl_start("foo")`
+will produce a file foo-[hostname]-[yyyymmdd].tab.gz, containing timing
+and consumption data, where [hostname] is the value of `hostname` and
+[yyyymmdd] is a representation of the current date.  Use different target
+file prefixes for runs you wish to distinguish.
+
+```{r lklk,eval=FALSE}
+id = cl_start([target file prefix])
+[use R until task to be measured is complete]
+cl_stop(id)
+usage_df = cl_parse(dir(patt=[target file prefix]))
+# analyze or filter the usage_df (for example, to trim away
+# time related to task delay or delay of `cl_stop`
+plot_usage(usage_df)
+```
+
+# Timestamps
+
+Yubo Cheng has added functionality allowing us to annotate
+usage plots with labels related to task phases.  Here is
+the code from the example showing how to introduce annotations
+in the time profile.
+
+```{r lkts, eval=TRUE}
+     id <- cl_start() 
+     Sys.sleep(2)
+     #code
+     cl_timestamp(id, "step1")
+     Sys.sleep(2)
+     # code
+     Sys.sleep(2)
+     cl_timestamp(id, "step2")
+     Sys.sleep(2)
+     # code
+     Sys.sleep(2)
+     cl_timestamp(id, "step3")
+     Sys.sleep(2)
+     # code
+     cl_stop(id)
+     path <- cl_result_path(id)
+     
+     plot_usage(cl_parse(path)) +
+       cl_timestamp_layer(path) +
+       cl_timestamp_label(path) +
+       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+# Reproducibility
+
+The `r Biocpkg("Rcollectl")` package `r citep(bib[["Rcollectl"]])` was made possible thanks to:
+
+* R `r citep(bib[["R"]])`
+* `r Biocpkg("BiocStyle")` `r citep(bib[["BiocStyle"]])`
+* `r CRANpkg("knitcitations")` `r citep(bib[["knitcitations"]])`
+* `r CRANpkg("knitr")` `r citep(bib[["knitr"]])`
+* `r CRANpkg("rmarkdown")` `r citep(bib[["rmarkdown"]])`
+* `r CRANpkg("sessioninfo")` `r citep(bib[["sessioninfo"]])`
+* `r CRANpkg("testthat")` `r citep(bib[["testthat"]])`
+
+This package was developed using `r BiocStyle::Githubpkg("lcolladotor/biocthis")`.
+
+
+Code for creating the vignette
+
+```{r createVignette, eval=FALSE}
+## Create the vignette
+library("rmarkdown")
+system.time(render("Rcollectl.Rmd", "BiocStyle::html_document"))
+
+## Extract the R code
+library("knitr")
+knit("Rcollectl.Rmd", tangle = TRUE)
+```
+
+```{r createVignette2}
+## Clean up
+file.remove("Rcollectl.bib")
+```
+
+Date the vignette was generated.
+
+```{r reproduce1, echo=FALSE}
+## Date the vignette was generated
+Sys.time()
+```
+
+Wallclock time spent generating the vignette.
+
+```{r reproduce2, echo=FALSE}
+## Processing time in seconds
+totalTime <- diff(c(startTime, Sys.time()))
+round(totalTime, digits = 3)
+```
+
+`R` session information.
+
+```{r reproduce3, echo=FALSE}
+## Session info
+library("sessioninfo")
+options(width = 120)
+session_info()
+```
+
+
+
+# Bibliography
+
+This vignette was generated using `r Biocpkg("BiocStyle")` `r citep(bib[["BiocStyle"]])`
+with `r CRANpkg("knitr")` `r citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` `r citep(bib[["rmarkdown"]])` running behind the scenes.
+
+Citations made with `r CRANpkg("knitcitations")` `r citep(bib[["knitcitations"]])`.
+
+```{r vignetteBiblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
+## Print bibliography
+bibliography()
+```
