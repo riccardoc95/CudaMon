@@ -10,8 +10,8 @@ rm -rf ~/R/library
 mkdir -p ~/R/library
 export R_LIBS_USER=~/R/library
 
-export NVML_INCLUDE_DIR=/software/spack/linux-zen4/cuda-13.1.1-5qrd5fdnw2vmklpq7pwz5ht4gwrvhgkb/include
-export NVML_LIB_DIR=/software/spack/linux-zen4/cuda-13.1.1-5qrd5fdnw2vmklpq7pwz5ht4gwrvhgkb/targets/x86_64-linux/lib/stubs/
+export NVML_INCLUDE_DIR=$CUDA_HOME/include
+export NVML_LIB_DIR=$CUDA_HOME/targets/x86_64-linux/lib/stubs/
 
 R -q -e 'if (!requireNamespace("roxygen2", quietly = TRUE)) install.packages("roxygen2", repos = "https://cloud.r-project.org")'
 R -q -e 'if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2", repos = "https://cloud.r-project.org")'
