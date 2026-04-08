@@ -1,6 +1,0 @@
-CHANGES IN VERSION 0.99
--------------------------
-
-Initial Submission 
-
-- This package helps measure CPU/network/storage consumption of a series of R commands.
