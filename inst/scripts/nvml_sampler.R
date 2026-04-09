@@ -13,16 +13,50 @@ device_index <- if (length(args) >= 7 && nzchar(args[[7]])) {
 
 suppressPackageStartupMessages(library(CudaMon))
 
-append_csv <- function(x, path) {
-  utils::write.table(
-    x,
-    file = path,
-    sep = ",",
-    row.names = FALSE,
-    col.names = !file.exists(path),
-    append = file.exists(path),
-    qmethod = "double"
+process_tree_pids <- function(pid, include_descendants = TRUE) {
+  pid <- as.integer(pid)
+  if (!include_descendants) {
+    return(pid)
+  }
+
+  ps_output <- tryCatch(
+    system2("ps", c("-e", "-o", "pid=", "-o", "ppid="), stdout = TRUE, stderr = FALSE),
+    warning = function(...) character(),
+    error = function(...) character()
   )
+
+  if (length(ps_output) == 0L) {
+    return(pid)
+  }
+
+  proc_table <- tryCatch(
+    utils::read.table(
+      text = ps_output,
+      col.names = c("pid", "ppid"),
+      stringsAsFactors = FALSE
+    ),
+    error = function(...) NULL
+  )
+
+  if (is.null(proc_table) || nrow(proc_table) == 0L) {
+    return(pid)
+  }
+
+  seen <- pid
+  frontier <- pid
+
+  while (length(frontier) > 0L) {
+    children <- proc_table$pid[proc_table$ppid %in% frontier]
+    children <- setdiff(unique(as.integer(children)), seen)
+    if (length(children) == 0L) {
+      break
+    }
+
+    seen <- c(seen, children)
+    frontier <- children
+  }
+
+  as.integer(seen)
 }
 
 writeLines("", witness_path)
@@ -51,15 +85,29 @@ while (TRUE) {
         )
       })
     )
-    append_csv(device_rows, device_metrics_path)
+    utils::write.table(
+      device_rows,
+      file = device_metrics_path,
+      sep = ",",
+      row.names = FALSE,
+      col.names = !file.exists(device_metrics_path),
+      append = file.exists(device_metrics_path),
+      qmethod = "double"
+    )
   }
 
-  process_rows <- CudaMon:::nvml_list_r_compute_processes(
+  tracked_pids <- process_tree_pids(
     pid = pid,
     include_descendants = include_descendants
   )
+  process_rows <- CudaMon::nvml_list_compute_processes(
+    device_index = device_index,
+    pid = tracked_pids
+  )
 
   if (nrow(process_rows) > 0L) {
+    process_rows$tracked_pid <- as.integer(process_rows$pid)
+    process_rows$is_root_pid <- process_rows$tracked_pid == pid
     process_rows$timestamp <- sample_time
     process_rows$sampler_pid <- pid
     process_rows <- process_rows[, c(
@@ -73,7 +121,15 @@ while (TRUE) {
       "gpu_instance_id",
       "compute_instance_id"
     )]
-    append_csv(process_rows, compute_processes_path)
+    utils::write.table(
+      process_rows,
+      file = compute_processes_path,
+      sep = ",",
+      row.names = FALSE,
+      col.names = !file.exists(compute_processes_path),
+      append = file.exists(compute_processes_path),
+      qmethod = "double"
+    )
   }
 
   Sys.sleep(period)
