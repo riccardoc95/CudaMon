@@ -31,7 +31,13 @@ skip_if_no_nvidia_gpu <- function() {
 }
 
 compile_manual_cuda_library <- function() {
-  src_dir <- normalizePath(file.path("inst", "scripts", "test-cuda"), mustWork = TRUE)
+  src_dir <- system.file("scripts", "test-cuda", package = "CudaMon")
+  if (!nzchar(src_dir)) {
+    local_dir <- file.path("inst", "scripts", "test-cuda")
+    if (dir.exists(local_dir)) {
+      src_dir <- normalizePath(local_dir, mustWork = TRUE)
+    }
+  }
 
   testthat::skip_if_not(dir.exists(src_dir), message = "CUDA test sources not found")
   testthat::skip_if_not(nzchar(Sys.which("nvcc")), message = "nvcc is not available")
