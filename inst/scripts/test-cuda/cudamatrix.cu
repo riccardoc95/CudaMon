@@ -72,7 +72,7 @@ extern "C" SEXP cuda_matrix_multiply(SEXP iterations) {
     clock_t start = clock();
 
     for (int iter = 0; iter < num_iterations; iter++) {
-        Rprintf("Iteration %d/%d\n", iter + 1, num_iterations);
+        // Rprintf("Iteration %d/%d\n", iter + 1, num_iterations);
 
         initializeMatrix(h_A, m, k);
         initializeMatrix(h_B, m, k);
