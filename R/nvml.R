@@ -2,6 +2,28 @@
 # Copyright (c) 2025 Gabriele Sales
 #
 
+
+#' Convert an NVML error code to an R error
+#'
+#' @param code Integer NVML return code (0 == success)
+#' @return Invisible TRUE on success; otherwise stops with an error
+nvml_check_status <- function(code) {
+  if (!is.numeric(code) && !is.integer(code)) {
+    stop("Internal error: NVML status code is not numeric", call. = FALSE)
+  }
+
+  code <- as.integer(code)
+  nvml_code <- if (code < 0L) abs(code) else code
+
+  if (nvml_code == 0L) {
+    return(invisible(TRUE))
+  }
+
+  msg <- .Call("nvml_error_string_c", nvml_code, PACKAGE = "CudaMon")
+  stop(sprintf("NVML error: %s (code: %d)", msg, nvml_code), call. = FALSE)
+}
+
+
 #' Number of NVML‑visible devices
 #' @export
 nvml_device_count <- function() {
@@ -38,7 +60,18 @@ nvml_list_devices <- function() {
   }
 
   devices <- lapply(seq_len(count) - 1L, function(idx) {
-    nvml_as_device_df(.Call("nvml_device_info_c", idx, PACKAGE = "CudaMon"))
+    res <- .Call("nvml_device_info_c", idx, PACKAGE = "CudaMon")
+    if (is.integer(res) && length(res) == 1L && res < 0L) {
+      nvml_check_status(res)
+    }
+
+    data.frame(
+      device_index = as.integer(res[[1L]]),
+      name = as.character(res[[2L]]),
+      uuid = as.character(res[[3L]]),
+      memory_total_bytes = as.double(res[[4L]]),
+      stringsAsFactors = FALSE
+    )
   })
 
   do.call(rbind, devices)
@@ -73,11 +106,23 @@ nvml_list_compute_processes <- function(device_index = NULL, pid = NULL) {
   }
 
   process_frames <- lapply(indices, function(idx) {
-    nvml_as_process_df(.Call(
+    res <- .Call(
       "nvml_device_compute_processes_c",
       as.integer(idx),
       PACKAGE = "CudaMon"
-    ))
+    )
+    if (is.integer(res) && length(res) == 1L && res < 0L) {
+      nvml_check_status(res)
+    }
+
+    data.frame(
+      device_index = as.integer(res[[1L]]),
+      pid = as.integer(res[[2L]]),
+      used_gpu_memory_bytes = as.double(res[[3L]]),
+      gpu_instance_id = as.integer(res[[4L]]),
+      compute_instance_id = as.integer(res[[5L]]),
+      stringsAsFactors = FALSE
+    )
   })
 
   process_df <- do.call(rbind, process_frames)
@@ -111,7 +156,29 @@ nvml_get_metrics <- function(device_index) {
   }
   idx <- as.integer(device_index)
 
-  nvml_as_metrics(.Call("nvml_get_metrics_c", idx, PACKAGE = "CudaMon"))
+  res <- .Call("nvml_get_metrics_c", idx, PACKAGE = "CudaMon")
+  if (is.integer(res) && length(res) == 1L && res < 0L) {
+    nvml_check_status(res)
+  }
+
+  stats::setNames(
+    list(
+      as.integer(res[[1L]]),
+      as.integer(res[[2L]]),
+      as.integer(res[[3L]]),
+      as.integer(res[[4L]]),
+      as.double(res[[5L]]),
+      as.double(res[[6L]])
+    ),
+    c(
+      "gpu_utilization_pct",
+      "memory_utilization_pct",
+      "temperature_c",
+      "power_usage_mw",
+      "memory_used_bytes",
+      "memory_total_bytes"
+    )
+  )
 }
 
 

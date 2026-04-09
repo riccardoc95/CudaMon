@@ -13,11 +13,11 @@ R CMD INSTALL .
 ```r
 library(CudaMon)
 
-sampler <- nvml_sample_start(period = 0.5)
+sampler <- cm_start(period = 0.5)
 Sys.sleep(2)
-nvml_sample_stop(sampler)
+cm_stop(sampler)
 
-session <- nvml_sample_read(sampler)
+session <- cm_parser(sampler)
 plot_usage(session)
 ```
 

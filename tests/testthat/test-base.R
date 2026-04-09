@@ -29,20 +29,20 @@ test_that("the sampler can monitor a short sleep and build a plot", {
   plot_path <- paste0(prefix, "_usage.png")
   stopped <- FALSE
 
-  sampler <- CudaMon:::nvml_sample_start(
+  sampler <- CudaMon:::cm_start(
     path_prefix = prefix,
     period = 0.2,
     pid = Sys.getpid(),
     include_descendants = TRUE
   )
 
-  CudaMon:::nvml_mark_step(sampler, "before_sleep")
+  CudaMon:::cm_timestamp(sampler, "before_sleep")
   Sys.sleep(1)
-  CudaMon:::nvml_mark_step(sampler, "after_sleep")
-  CudaMon:::nvml_sample_stop(sampler)
+  CudaMon:::cm_timestamp(sampler, "after_sleep")
+  CudaMon:::cm_stop(sampler)
   stopped <- TRUE
 
-  session <- CudaMon:::nvml_sample_read(sampler)
+  session <- CudaMon:::cm_parser(sampler)
   plot_obj <- CudaMon:::plot_usage(session)
   ggplot2::ggsave(plot_path, plot_obj, width = 8, height = 5, dpi = 120)
 

@@ -1,12 +1,12 @@
 #' Reshape sampled GPU metrics for visualization
 #'
-#' @param x A `CudaMonSession` object returned by `nvml_sample_read()`.
+#' @param x A `CudaMonSession` object returned by `cm_parser()`.
 #' @param tz Time zone used to parse timestamps.
 #' @param device_index Optional integer GPU index. If `NULL`, include all
 #'   sampled devices.
 #' @return A long-format data frame suitable for plotting.
 #' @export
-nvml_vizdf <- function(x, tz = "UTC", device_index = NULL) {
+cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
   if (!inherits(x, "CudaMonSession")) {
     stop("x must inherit from 'CudaMonSession'", call. = FALSE)
   }
@@ -84,14 +84,14 @@ nvml_vizdf <- function(x, tz = "UTC", device_index = NULL) {
 
 #' Plot sampled GPU usage over time
 #'
-#' @param x A `CudaMonSession` object returned by `nvml_sample_read()`.
+#' @param x A `CudaMonSession` object returned by `cm_parser()`.
 #' @param tz Time zone used to parse timestamps.
 #' @param device_index Optional integer GPU index. If `NULL`, include all
 #'   sampled devices.
 #' @return A ggplot object with one facet per metric.
 #' @export
 plot_usage <- function(x, tz = "UTC", device_index = NULL) {
-  plot_df <- nvml_vizdf(x, tz = tz, device_index = device_index)
+  plot_df <- cm_vizdf(x, tz = tz, device_index = device_index)
   p <- ggplot2::ggplot(
     plot_df,
     ggplot2::aes(x = tm, y = value)

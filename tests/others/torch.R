@@ -94,25 +94,25 @@ run_torch_inference_job <- function(epochs) {
 
 library(CudaMon)
 
-sampler <- nvml_sample_start(
+sampler <- cm_start(
   path_prefix = "torch_test",
   period = PERIOD,
   pid = Sys.getpid(),
   include_descendants = TRUE
 )
-#on.exit(nvml_sample_stop(sampler), add = TRUE)
+#on.exit(cm_stop(sampler), add = TRUE)
 
 if (isTRUE(RUN_GPU_JOB)) {
-  nvml_mark_step(sampler, "training")
+  cm_timestamp(sampler, "training")
   run_torch_training_job(TRAINING_EPOCHS)
-  nvml_mark_step(sampler, "inference")
+  cm_timestamp(sampler, "inference")
   run_torch_inference_job(INFERENCE_EPOCHS)
 } else {
   Sys.sleep(5)
 }
 
-nvml_sample_stop(sampler)
-session <- nvml_sample_read(sampler)
+cm_stop(sampler)
+session <- cm_parser(sampler)
 
 print(session)
 

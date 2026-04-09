@@ -11,7 +11,7 @@
 #' @param startup_timeout Maximum startup wait in seconds.
 #' @return A list with sampler metadata and class `nvml_sampler`.
 #' @export
-nvml_sample_start <- function(
+cm_start <- function(
     path_prefix = NULL,
     period = 1,
     pid = Sys.getpid(),
@@ -20,7 +20,7 @@ nvml_sample_start <- function(
     log = NULL,
     startup_timeout = 2) {
   if (is.null(path_prefix)) {
-    path_prefix <- default_sampler_prefix(pid)
+    path_prefix <- tempfile(pattern = sprintf("cudamon-%d-", as.integer(pid)))
   }
 
   if (!is.character(path_prefix) || length(path_prefix) != 1L || !nzchar(path_prefix)) {
@@ -43,27 +43,49 @@ nvml_sample_start <- function(
   events_path <- paste0(path_prefix, "_events.csv")
   witness_path <- paste0(path_prefix, "_startup.signal")
   log_path <- if (is.null(log)) paste0(path_prefix, "_sampler.log") else log
-  script_path <- nvml_sampler_script_path()
+  script_path <- system.file("scripts", "nvml_sampler.R", package = "CudaMon")
+  if (!nzchar(script_path)) {
+    stop("Cannot find bundled NVML sampler script", call. = FALSE)
+  }
   rscript_path <- file.path(R.home("bin"), "Rscript")
   if (!file.exists(rscript_path)) {
     rscript_path <- file.path(R.home("bin"), "R")
   }
   lib_paths <- .libPaths()
-  env <- sampler_env(lib_paths)
+  env <- character()
+  r_libs <- paste(lib_paths, collapse = .Platform$path.sep)
+  env["R_LIBS"] <- r_libs
+  env["R_LIBS_USER"] <- r_libs
+  env["R_LIBS_SITE"] <- Sys.getenv("R_LIBS_SITE", unset = "")
+  device_index_arg <- if (is.null(device_index)) "" else paste(device_index, collapse = ",")
+  args <- if (grepl("^Rscript", basename(rscript_path))) {
+    c(
+      "--vanilla",
+      script_path,
+      device_metrics_path,
+      compute_processes_path,
+      witness_path,
+      as.character(period),
+      as.character(root_pid),
+      if (isTRUE(include_descendants)) "true" else "false",
+      device_index_arg
+    )
+  } else {
+    c(
+      script_path,
+      device_metrics_path,
+      compute_processes_path,
+      witness_path,
+      as.character(period),
+      as.character(root_pid),
+      if (isTRUE(include_descendants)) "true" else "false",
+      device_index_arg
+    )
+  }
 
   job <- processx::process$new(
     command = rscript_path,
-    args = nvml_sampler_args(
-      command = rscript_path,
-      script_path = script_path,
-      device_metrics_path = device_metrics_path,
-      compute_processes_path = compute_processes_path,
-      witness_path = witness_path,
-      period = period,
-      pid = root_pid,
-      include_descendants = include_descendants,
-      device_index = device_index
-    ),
+    args = args,
     stdout = log_path,
     stderr = log_path,
     env = env,
@@ -96,7 +118,11 @@ nvml_sample_start <- function(
   }
 
   if (!started) {
-    kill_process(job)
+    job$interrupt()
+    job$wait(timeout = 1000L)
+    if (job$is_alive()) {
+      job$kill()
+    }
     stop(
       sprintf(
         "NVML sampler did not start before the timeout elapsed. Check log: %s",
@@ -129,11 +155,11 @@ nvml_sample_start <- function(
 
 #' Record a workflow step during an active NVML sampling session
 #'
-#' @param sampler A sampler object returned by `nvml_sample_start()`.
+#' @param sampler A sampler object returned by `cm_start()`.
 #' @param step A short label identifying the current workflow step.
 #' @return Invisibly returns the sampler.
 #' @export
-nvml_mark_step <- function(sampler, step) {
+cm_timestamp <- function(sampler, step) {
   if (!inherits(sampler, "nvml_sampler")) {
     stop("sampler must inherit from 'nvml_sampler'", call. = FALSE)
   }
@@ -149,16 +175,24 @@ nvml_mark_step <- function(sampler, step) {
     stringsAsFactors = FALSE
   )
 
-  append_csv(event_row, sampler$paths$events)
+  utils::write.table(
+    event_row,
+    file = sampler$paths$events,
+    sep = ",",
+    row.names = FALSE,
+    col.names = !file.exists(sampler$paths$events),
+    append = file.exists(sampler$paths$events),
+    qmethod = "double"
+  )
   invisible(sampler)
 }
 
 #' Stop an NVML background sampler
 #'
-#' @param sampler A sampler object returned by `nvml_sample_start()`.
+#' @param sampler A sampler object returned by `cm_start()`.
 #' @return Invisibly returns the sampler.
 #' @export
-nvml_sample_stop <- function(sampler) {
+cm_stop <- function(sampler) {
   if (!inherits(sampler, "nvml_sampler")) {
     stop("sampler must inherit from 'nvml_sampler'", call. = FALSE)
   }
@@ -170,18 +204,22 @@ nvml_sample_stop <- function(sampler) {
       1
     }
     Sys.sleep(wait_seconds)
-    kill_process(sampler$process)
+    sampler$process$interrupt()
+    sampler$process$wait(timeout = 1000L)
+    if (sampler$process$is_alive()) {
+      sampler$process$kill()
+    }
   }
   invisible(sampler)
 }
 
 #' Read CSV output produced by the NVML sampler
 #'
-#' @param sampler A sampler object returned by `nvml_sample_start()`, or a
+#' @param sampler A sampler object returned by `cm_start()`, or a
 #'   character path prefix used to build the sampler output paths.
 #' @return A `CudaMonSession` object.
 #' @export
-nvml_sample_read <- function(sampler) {
+cm_parser <- function(sampler) {
   if (inherits(sampler, "nvml_sampler")) {
     device_metrics_path <- sampler$paths$device_metrics
     compute_processes_path <- sampler$paths$compute_processes
@@ -203,9 +241,24 @@ nvml_sample_read <- function(sampler) {
   }
 
   CudaMonSession(
-    device_metrics = read_sampler_csv(device_metrics_path),
-    compute_processes = read_sampler_csv(compute_processes_path),
-    events = read_sampler_csv(events_path),
+    device_metrics = if (!file.exists(device_metrics_path) ||
+        isTRUE(file.info(device_metrics_path)$size == 0)) {
+      data.frame()
+    } else {
+      utils::read.csv(device_metrics_path, stringsAsFactors = FALSE)
+    },
+    compute_processes = if (!file.exists(compute_processes_path) ||
+        isTRUE(file.info(compute_processes_path)$size == 0)) {
+      data.frame()
+    } else {
+      utils::read.csv(compute_processes_path, stringsAsFactors = FALSE)
+    },
+    events = if (!file.exists(events_path) ||
+        isTRUE(file.info(events_path)$size == 0)) {
+      data.frame()
+    } else {
+      utils::read.csv(events_path, stringsAsFactors = FALSE)
+    },
     paths = list(
       device_metrics = device_metrics_path,
       compute_processes = compute_processes_path,
@@ -214,99 +267,4 @@ nvml_sample_read <- function(sampler) {
     ),
     metadata = metadata
   )
-}
-
-kill_process <- function(proc) {
-  proc$interrupt()
-  proc$wait(timeout = 1000L)
-
-  if (proc$is_alive()) {
-    proc$kill()
-  }
-}
-
-sampler_env <- function(lib_paths) {
-  env <- character()
-
-  r_libs <- paste(lib_paths, collapse = .Platform$path.sep)
-  env["R_LIBS"] <- r_libs
-  env["R_LIBS_USER"] <- r_libs
-  env["R_LIBS_SITE"] <- Sys.getenv("R_LIBS_SITE", unset = "")
-
-  env
-}
-
-default_sampler_prefix <- function(pid) {
-  tempfile(pattern = sprintf("cudamon-%d-", as.integer(pid)))
-}
-
-append_csv <- function(x, path) {
-  utils::write.table(
-    x,
-    file = path,
-    sep = ",",
-    row.names = FALSE,
-    col.names = !file.exists(path),
-    append = file.exists(path),
-    qmethod = "double"
-  )
-}
-
-nvml_sampler_args <- function(
-    command,
-    script_path,
-    device_metrics_path,
-    compute_processes_path,
-    witness_path,
-    period,
-    pid,
-    include_descendants,
-    device_index) {
-  device_index_arg <- if (is.null(device_index)) "" else paste(device_index, collapse = ",")
-
-  if (grepl("^Rscript", basename(command))) {
-    return(c(
-      "--vanilla",
-      script_path,
-      device_metrics_path,
-      compute_processes_path,
-      witness_path,
-      as.character(period),
-      as.character(pid),
-      if (isTRUE(include_descendants)) "true" else "false",
-      device_index_arg
-    ))
-  }
-
-  c(
-    script_path,
-    device_metrics_path,
-    compute_processes_path,
-    witness_path,
-    as.character(period),
-    as.character(pid),
-    if (isTRUE(include_descendants)) "true" else "false",
-    device_index_arg
-  )
-}
-
-write_nvml_sampler_script <- function() {
-  .Deprecated("nvml_sampler_script_path")
-  nvml_sampler_script_path()
-}
-
-nvml_sampler_script_path <- function() {
-  script_path <- system.file("scripts", "nvml_sampler.R", package = "CudaMon")
-  if (!nzchar(script_path)) {
-    stop("Cannot find bundled NVML sampler script", call. = FALSE)
-  }
-  script_path
-}
-
-read_sampler_csv <- function(path) {
-  if (!file.exists(path) || isTRUE(file.info(path)$size == 0)) {
-    return(data.frame())
-  }
-
-  utils::read.csv(path, stringsAsFactors = FALSE)
 }
