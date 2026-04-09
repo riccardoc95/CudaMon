@@ -1,5 +1,5 @@
 Package: CudaMon
-Title: Measure resource consumption of R processes using collectl and NVML
+Title: Monitor NVIDIA GPU Activity from R with NVML
 Version: 0.0.0.9000
 Authors@R:
     c(person(given = "Gabriele",
@@ -11,9 +11,10 @@ Authors@R:
            family = "Zadenoori",
            role = c("aut", "cre"),
            email="Amin.zadenoori@gmail.com"))
-Description: Provide functions to obtain instrumentation data on
-    processes in a unix environment.  Parse output of a collectl
-    run and collect NVML metrics.  Vizualize aspects of system usage.
+Description: Monitor NVIDIA GPU activity from R through NVML.
+    The package can collect device-level metrics and active compute
+    process information over time, annotate runs with event markers,
+    and visualize the resulting session data.
 License: Artistic-2.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
