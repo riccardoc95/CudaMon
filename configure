@@ -17,16 +17,8 @@ HAVE_NVML=0
 NVML_CFLAGS=
 NVML_LIBS=
 
-if pkg-config --exists nvml 2>/dev/null; then
-  NVML_CFLAGS=$(pkg-config --cflags nvml)
-  NVML_LIBS=$(pkg-config --libs nvml)
-  HAVE_NVML=1
-elif pkg-config --exists nvidia-ml 2>/dev/null; then
-  NVML_CFLAGS=$(pkg-config --cflags nvidia-ml)
-  NVML_LIBS=$(pkg-config --libs nvidia-ml)
-  HAVE_NVML=1
-elif [ -n "${NVML_INCLUDE_DIR:-}" ] && [ -n "${NVML_LIB_DIR:-}" ] && \
-     [ -f "${NVML_INCLUDE_DIR}/nvml.h" ]; then
+if [ -n "${NVML_INCLUDE_DIR:-}" ] && [ -n "${NVML_LIB_DIR:-}" ] && \
+   [ -f "${NVML_INCLUDE_DIR}/nvml.h" ]; then
   NVML_CFLAGS="-I${NVML_INCLUDE_DIR}"
   NVML_LIBS="-L${NVML_LIB_DIR} -lnvidia-ml"
   HAVE_NVML=1
