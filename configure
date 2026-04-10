@@ -21,13 +21,17 @@ find_nvml_from_cuda_tree() {
   base="$1"
   arch="$2"
 
-  inc="$base/targets/${arch}-linux/include"
   lib="$base/targets/${arch}-linux/lib/stubs"
 
-  if [ -f "$inc/nvml.h" ] && [ -f "$lib/libnvidia-ml.so" ]; then
-    echo "$inc|$lib"
-    return 0
-  fi
+  for inc in \
+    "$base/include" \
+    "$base/targets/${arch}-linux/include"
+  do
+    if [ -f "$inc/nvml.h" ] && [ -f "$lib/libnvidia-ml.so" ]; then
+      echo "$inc|$lib"
+      return 0
+    fi
+  done
 
   return 1
 }
