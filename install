@@ -7,7 +7,7 @@ if ! command -v R >/dev/null 2>&1; then
 fi
 
 
-export NVML_INCLUDE_DIR=$CUDA_HOME/include
-export NVML_LIB_DIR=$CUDA_HOME/targets/x86_64-linux/lib/stubs/
+R -q -e 'if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2", repos = "https://cloud.r-project.org")'
+R -q -e 'if (!requireNamespace("processx", quietly = TRUE)) install.packages("processx", repos = "https://cloud.r-project.org")'
 
 R CMD INSTALL .
