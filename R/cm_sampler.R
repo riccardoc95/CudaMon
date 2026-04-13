@@ -1,24 +1,23 @@
 #' Start sampling NVML metrics to CSV files
 #'
-#' @param path_prefix Optional output path prefix. If `NULL`, a unique prefix is
-#'   generated automatically. Two files will be created:
-#'   `*_device_metrics.csv`, `*_compute_processes.csv`, and `*_events.csv`.
 #' @param period Sampling interval in seconds.
 #' @param pid Root process identifier, defaults to the current R session PID.
 #' @param include_descendants Whether to include child processes of `pid`.
 #' @param device_index Optional integer GPU index. If `NULL`, query all devices.
 #' @param log Optional log file written by the background sampler process.
-#' @param startup_timeout Maximum startup wait in seconds.
+#' @param path_prefix Optional output path prefix. If `NULL`, a unique prefix is
+#'   generated automatically. Three files will be created:
+#'   `*_device_metrics.csv`, `*_compute_processes.csv`, and `*_events.csv`.
 #' @return A list with sampler metadata and class `nvml_sampler`.
 #' @export
 cm_start <- function(
-    path_prefix = NULL,
     period = 1,
     pid = Sys.getpid(),
     include_descendants = TRUE,
     device_index = NULL,
     log = NULL,
-    startup_timeout = 2) {
+    path_prefix = NULL
+) {
   if (is.null(path_prefix)) {
     path_prefix <- tempfile(pattern = sprintf("cudamon-%d-", as.integer(pid)))
   }
@@ -29,11 +28,6 @@ cm_start <- function(
 
   if (!is.numeric(period) || length(period) != 1L || is.na(period) || period <= 0) {
     stop("period must be a single positive numeric value", call. = FALSE)
-  }
-
-  if (!is.numeric(startup_timeout) || length(startup_timeout) != 1L ||
-      is.na(startup_timeout) || startup_timeout <= 0) {
-    stop("startup_timeout must be a single positive numeric value", call. = FALSE)
   }
 
   root_pid <- as.integer(pid)
@@ -92,7 +86,7 @@ cm_start <- function(
     cleanup_tree = TRUE
   )
 
-  deadline <- Sys.time() + startup_timeout
+  deadline <- Sys.time()
   started <- FALSE
 
   while (Sys.time() < deadline) {

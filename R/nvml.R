@@ -180,10 +180,3 @@ nvml_get_metrics <- function(device_index) {
     )
   )
 }
-
-
-#' Demo function showing typical usage
-#' @export
-nvml_demo <- function() {
-  nvml_get_metrics(0)
-}
