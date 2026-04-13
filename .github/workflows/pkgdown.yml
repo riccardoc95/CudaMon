@@ -26,9 +26,15 @@ jobs:
             r-cran-processx
 
       - name: Install pkgdown
-        run: Rscript -e 'install.packages("pkgdown", repos = "https://cloud.r-project.org")'
+        env:
+          R_LIBS_USER: ${{ github.workspace }}/.r-lib
+        run: |
+          mkdir -p "${R_LIBS_USER}"
+          Rscript -e 'install.packages("pkgdown", repos = "https://cloud.r-project.org", lib = Sys.getenv("R_LIBS_USER"))'
 
       - name: Build pkgdown site
+        env:
+          R_LIBS_USER: ${{ github.workspace }}/.r-lib
         run: Rscript -e 'pkgdown::build_site(new_process = FALSE)'
 
       - name: Deploy to gh-pages
