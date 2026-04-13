@@ -18,7 +18,7 @@ Sys.sleep(2)
 cm_stop(sampler)
 
 session <- cm_parser(sampler)
-plot_usage(session)
+cm_plot_usage(session)
 ```
 
 ## Tests

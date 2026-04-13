@@ -30,7 +30,7 @@ test_that("CudaMon monitors GPU activity during compiled CUDA matrix multiplicat
   stopped <- TRUE
 
   session <- CudaMon:::cm_parser(sampler)
-  plot_obj <- CudaMon:::plot_usage(session)
+  plot_obj <- CudaMon:::cm_plot_usage(session)
   ggplot2::ggsave(plot_path, plot_obj, width = 8, height = 5, dpi = 120)
 
   expect_type(result, "double")

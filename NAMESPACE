@@ -3,6 +3,7 @@
 S3method(print,CudaMonSession)
 export(CudaMonSession)
 export(cm_parser)
+export(cm_plot_usage)
 export(cm_start)
 export(cm_stop)
 export(cm_timestamp)

@@ -145,5 +145,5 @@ print(session$compute_processes)
 
 
 library(ggplot2)
-p <- plot_usage(session, tz = "Europe/Rome")
+p <- cm_plot_usage(session, tz = "Europe/Rome")
 ggsave("torch_test_usage.png", p, width = 10, height = 6, dpi = 150)

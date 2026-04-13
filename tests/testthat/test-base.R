@@ -43,7 +43,7 @@ test_that("the sampler can monitor a short sleep and build a plot", {
   stopped <- TRUE
 
   session <- CudaMon:::cm_parser(sampler)
-  plot_obj <- CudaMon:::plot_usage(session)
+  plot_obj <- CudaMon:::cm_plot_usage(session)
   ggplot2::ggsave(plot_path, plot_obj, width = 8, height = 5, dpi = 120)
 
   expect_s3_class(session, "CudaMonSession")

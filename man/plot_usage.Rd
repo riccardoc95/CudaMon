@@ -2,12 +2,15 @@
 % Please edit documentation in R/viz.R
 \name{plot_usage}
 \alias{plot_usage}
-\title{Plot sampled GPU usage over time}
+\title{Plot sampled CPU and GPU usage over time}
 \usage{
-plot_usage(x, tz = "UTC", device_index = NULL)
+plot_usage(x, cpu_df = NULL, tz = "UTC", device_index = NULL)
 }
 \arguments{
 \item{x}{A \code{CudaMonSession} object returned by \code{cm_parser()}.}
+
+\item{cpu_df}{Optional data frame of CPU metrics in long format (as returned
+by \code{vizdf()}). Must contain columns: \code{tm}, \code{xtype}, \code{pos}, \code{value}, \code{type}.}
 
 \item{tz}{Time zone used to parse timestamps.}
 
@@ -15,8 +18,16 @@ plot_usage(x, tz = "UTC", device_index = NULL)
 sampled devices.}
 }
 \value{
-A ggplot object with one facet per metric.
+A \code{ggplot2} object with one facet per metric
+CPU and GPU data.
 }
 \description{
-Plot sampled GPU usage over time
+This function plots time-series metrics from a \code{CudaMonSession} object,
+optionally combining them with precomputed CPU metrics. GPU metrics are
+obtained via \code{\link[=cm_vizdf]{cm_vizdf()}}, while CPU metrics must already be in the
+long/tidy format returned by \code{vizdf()}.
+}
+\details{
+If \code{cpu_df} is provided, CPU metrics are plotted first, followed by GPU
+metrics, using faceting by metric type.
 }
