@@ -32,6 +32,14 @@ jobs:
           mkdir -p "${R_LIBS_USER}"
           Rscript -e 'install.packages("pkgdown", repos = "https://cloud.r-project.org", lib = Sys.getenv("R_LIBS_USER"))'
 
+      - name: Write pkgdown sidebar
+        run: |
+          cat > sidebar.html <<'EOF'
+          <div class="pkgdown-sidebar">
+            <p>Documentation site for the CudaMon R package.</p>
+          </div>
+          EOF
+
       - name: Build pkgdown site
         env:
           R_LIBS_USER: ${{ github.workspace }}/.r-lib
