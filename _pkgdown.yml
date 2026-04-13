@@ -1,6 +1,28 @@
 template:
   bootstrap: 5
 
-home:
-  sidebar:
-    structure: [license, community, citation, authors, dev]
+reference:
+  - title: Main functions
+    contents:
+      - cm_start
+      - cm_timestamp
+      - cm_stop
+      - cm_parser
+      - cm_vizdf
+      - plot_usage
+
+  - title: Session
+    contents:
+      - CudaMonSession
+
+  - title: NVML bindings
+    contents:
+      - nvml_is_available
+      - nvml_device_count
+      - nvml_list_devices
+      - nvml_list_compute_processes
+      - nvml_get_metrics
+
+  - title: Internal
+    contents:
+      - nvml_check_status
