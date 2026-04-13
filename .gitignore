@@ -1,5 +1,4 @@
 tools/
-_pkgdown.yml
 src/*.so
 src/Makevars
 src/*.o

@@ -1,0 +1,6 @@
+template:
+  bootstrap: 5
+
+home:
+  sidebar:
+    structure: [license, community, citation, authors, dev]
