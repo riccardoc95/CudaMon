@@ -1,5 +1,11 @@
+url: https://riccardoc95.github.io/CudaMon/
+
 template:
   bootstrap: 5
+
+home:
+  sidebar:
+    structure: [license, community, citation, authors, dev]
 
 reference:
   - title: Main functions
@@ -9,6 +15,7 @@ reference:
       - cm_stop
       - cm_parser
       - cm_vizdf
+      - cm_plot_usage
       - plot_usage
 
   - title: Session
