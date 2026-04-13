@@ -5,20 +5,15 @@
 \title{Start sampling NVML metrics to CSV files}
 \usage{
 cm_start(
-  path_prefix = NULL,
   period = 1,
   pid = Sys.getpid(),
   include_descendants = TRUE,
   device_index = NULL,
   log = NULL,
-  startup_timeout = 2
+  path_prefix = NULL
 )
 }
 \arguments{
-\item{path_prefix}{Optional output path prefix. If \code{NULL}, a unique prefix is
-generated automatically. Two files will be created:
-\verb{*_device_metrics.csv}, \verb{*_compute_processes.csv}, and \verb{*_events.csv}.}
-
 \item{period}{Sampling interval in seconds.}
 
 \item{pid}{Root process identifier, defaults to the current R session PID.}
@@ -29,7 +24,9 @@ generated automatically. Two files will be created:
 
 \item{log}{Optional log file written by the background sampler process.}
 
-\item{startup_timeout}{Maximum startup wait in seconds.}
+\item{path_prefix}{Optional output path prefix. If \code{NULL}, a unique prefix is
+generated automatically. Three files will be created:
+\verb{*_device_metrics.csv}, \verb{*_compute_processes.csv}, and \verb{*_events.csv}.}
 }
 \value{
 A list with sampler metadata and class \code{nvml_sampler}.
