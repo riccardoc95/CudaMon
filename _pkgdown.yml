@@ -5,7 +5,7 @@ template:
 
 home:
   sidebar:
-    structure: [license, community, citation, authors, dev]
+    html: _pkgdown/sidebar.html
 
 reference:
   - title: Main functions
