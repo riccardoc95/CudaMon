@@ -23,7 +23,11 @@ jobs:
             r-cran-processx
 
       - name: Install package
-        run: R CMD INSTALL .
+        run: |
+          mkdir -p "${HOME}/R/site-library"
+          R CMD INSTALL -l "${HOME}/R/site-library" .
 
       - name: Run test-base.R
+        env:
+          R_LIBS_USER: ${{ env.HOME }}/R/site-library
         run: Rscript -e 'source("tests/testthat/helper-gpu.R"); testthat::test_file("tests/testthat/test-base.R")'
