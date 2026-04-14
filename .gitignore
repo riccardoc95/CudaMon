@@ -4,3 +4,4 @@ src/Makevars
 src/*.o
 Rd2.pdf
 docs/
+sidebar.html
