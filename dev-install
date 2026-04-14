@@ -25,7 +25,7 @@ R -q -e 'install.packages("reticulate", repos = "https://cloud.r-project.org")'
 R -q -e 'Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); py_config()'
 R -q -e 'Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); torch <- import("torch"); torch$cuda$is_available()'
 
-R -q -e '.libPaths(c(path.expand("~/R/library"), .libPaths())); Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); py_config(); torch <- import("torch"); torch$cuda$is_available(); source("tests/others/torch.R")'
+R -q -e '.libPaths(c(path.expand("~/R/library"), .libPaths())); Sys.setenv(RETICULATE_PYTHON = Sys.which("python")); library(reticulate); py_config(); torch <- import("torch"); torch$cuda$is_available(); source("inst/scripts/test-torch/torch.R")'
 
 
 R -q -e '.libPaths(c(path.expand("~/R/library"), .libPaths())); install.packages("testthat", repos = "https://cloud.r-project.org")'
