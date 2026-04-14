@@ -9,8 +9,12 @@ Authors@R:
            comment = c(ORCID = "0000-0003-2078-5661")),
       person(given = "Mohammad Amin",
            family = "Zadenoori",
-           role = c("aut", "cre"),
-           email="Amin.zadenoori@gmail.com"))
+           role = "aut",
+           email="Amin.zadenoori@gmail.com"),
+      person(given = "Riccardo",
+           family = "Ceccaroni",
+           role = "cre",
+           email="riccardo.ceccaroni@unipd.it"))
 Description: Monitor NVIDIA GPU activity from R through NVML.
     The package can collect device-level metrics and active compute
     process information over time, annotate runs with event markers,
