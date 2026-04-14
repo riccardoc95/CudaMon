@@ -41,7 +41,13 @@ plot_usage <- function(x, x_rcollectl = NULL, tz = "UTC", device_index = NULL) {
     }
 
     cpu_df <- cpu_df[, required_cols, drop = FALSE]
-    cpu_df$tm <- as.POSIXct(cpu_df$tm, tz = tz)
+    # Rcollectl can attach an incorrect timezone to CPU samples; preserve the
+    # displayed wall-clock time and reinterpret it in the source system timezone.
+    cpu_source_tz <- Sys.timezone()
+    if (!nzchar(cpu_source_tz)) {
+      cpu_source_tz <- "UTC"
+    }
+    cpu_df$tm <- as.POSIXct(format(cpu_df$tm, usetz = FALSE), tz = cpu_source_tz)
     cpu_df$value <- as.double(cpu_df$value)
     cpu_df$device_index <- NA_integer_
 
@@ -76,7 +82,10 @@ plot_usage <- function(x, x_rcollectl = NULL, tz = "UTC", device_index = NULL) {
   ) +
     ggplot2::geom_point() +
     ggplot2::facet_grid(ggplot2::vars(type), scales = "free") +
-    ggplot2::scale_x_datetime(timezone = tz)
+    ggplot2::scale_x_datetime(
+      timezone = tz,
+      date_labels = "%H:%M:%S"
+    )
 
   events_df <- x$events
   if (is.data.frame(events_df) && nrow(events_df) > 0L &&

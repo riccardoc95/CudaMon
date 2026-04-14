@@ -98,7 +98,10 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
   ) +
     ggplot2::geom_point() +
     ggplot2::facet_grid(ggplot2::vars(type), scales = "free") +
-    ggplot2::scale_x_datetime(timezone = tz)
+    ggplot2::scale_x_datetime(
+      timezone = tz,
+      date_labels = "%H:%M:%S"
+    )
 
   events_df <- x$events
   if (is.data.frame(events_df) && nrow(events_df) > 0L &&

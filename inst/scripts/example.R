@@ -12,7 +12,7 @@ library(Rcollectl)
 
 cl_sampler <- cl_start()
 cm_sampler <- cm_start()
-Sys.sleep(10)
+Sys.sleep(60)
 cm_stop(cm_sampler)
 cl_stop(cl_sampler)
 
@@ -20,5 +20,5 @@ cm_session <- cm_parser(cm_sampler)
 cl_session <- cl_parse(cl_result_path(cl_sampler))
 
 pdf("session.pdf", width = 8, height = 6)
-plot_usage(cm_session, cl_session)
+plot_usage(cm_session, cl_session, tz = "Europe/Rome")
 dev.off()
