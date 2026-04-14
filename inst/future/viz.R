@@ -75,13 +75,14 @@ plot_usage <- function(x, x_rcollectl = NULL, tz = "UTC", device_index = NULL) {
     ggplot2::aes(x = tm, y = value)
   ) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(ggplot2::vars(type), scales = "free")
+    ggplot2::facet_grid(ggplot2::vars(type), scales = "free") +
+    ggplot2::scale_x_datetime(timezone = tz)
 
   events_df <- x$events
   if (is.data.frame(events_df) && nrow(events_df) > 0L &&
       "timestamp" %in% names(events_df) && "step" %in% names(events_df)) {
     events_df <- events_df[, c("timestamp", "step"), drop = FALSE]
-    events_df$tm <- as.POSIXct(events_df$timestamp, tz = tz)
+    events_df$tm <- as.POSIXct(events_df$timestamp, tz = "UTC")
     events_df$label_y <- Inf
 
     p <- p +
