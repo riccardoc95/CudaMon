@@ -4,12 +4,12 @@
 \alias{plot_usage}
 \title{Plot sampled CPU and GPU usage over time}
 \usage{
-plot_usage(x, cpu_df = NULL, tz = "UTC", device_index = NULL)
+plot_usage(x, x_rcollectl = NULL, tz = "UTC", device_index = NULL)
 }
 \arguments{
 \item{x}{A \code{CudaMonSession} object returned by \code{cm_parser()}.}
 
-\item{cpu_df}{Optional data frame of CPU metrics in long format (as returned
+\item{x_rcollectl}{Optional data frame of CPU metrics in long format (as returned
 by \code{vizdf()}). Must contain columns: \code{tm}, \code{xtype}, \code{pos}, \code{value}, \code{type}.}
 
 \item{tz}{Time zone used to parse timestamps.}
@@ -28,6 +28,6 @@ obtained via \code{\link[=cm_vizdf]{cm_vizdf()}}, while CPU metrics must already
 long/tidy format returned by \code{vizdf()}.
 }
 \details{
-If \code{cpu_df} is provided, CPU metrics are plotted first, followed by GPU
+If \code{x_rcollectl} is provided, CPU metrics are plotted first, followed by GPU
 metrics, using faceting by metric type.
 }
