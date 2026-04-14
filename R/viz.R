@@ -137,11 +137,11 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
 #' obtained via [cm_vizdf()], while CPU metrics must already be in the
 #' long/tidy format returned by `vizdf()`.
 #'
-#' If `cpu_df` is provided, CPU metrics are plotted first, followed by GPU
+#' If `x_rcollectl` is provided, CPU metrics are plotted first, followed by GPU
 #' metrics, using faceting by metric type.
 #'
 #' @param x A `CudaMonSession` object returned by `cm_parser()`.
-#' @param cpu_df Optional data frame of CPU metrics in long format (as returned
+#' @param x_rcollectl Optional data frame of CPU metrics in long format (as returned
 #'   by `vizdf()`). Must contain columns: `tm`, `xtype`, `pos`, `value`, `type`.
 #' @param tz Time zone used to parse timestamps.
 #' @param device_index Optional integer GPU index. If `NULL`, include all
@@ -150,13 +150,14 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
 #' @return A `ggplot2` object with one facet per metric
 #'   CPU and GPU data.
 #' @export
-plot_usage <- function(x, cpu_df = NULL, tz = "UTC", device_index = NULL) {
+plot_usage <- function(x, x_rcollectl = NULL, tz = "UTC", device_index = NULL) {
   gpu_df <- cm_vizdf(x, tz = tz, device_index = device_index)
 
-  # If cpu_df is provided, normalize it and merge with gpu_df
-  if (!is.null(cpu_df)) {
+  # If x_rcollectl is provided, normalize it and merge with gpu_df
+  if (!is.null(x_rcollectl)) {
+    cpu_df <- Rcollectl:::vizdf(xrcollectl)
     if (!is.data.frame(cpu_df)) {
-      stop("cpu_df must be a data.frame", call. = FALSE)
+      stop("x_rcollectl must be a data.frame", call. = FALSE)
     }
 
     required_cols <- c("tm", "xtype", "pos", "value", "type")
@@ -164,7 +165,7 @@ plot_usage <- function(x, cpu_df = NULL, tz = "UTC", device_index = NULL) {
     if (length(missing_cols) > 0L) {
       stop(
         sprintf(
-          "cpu_df is missing required columns: %s",
+          "x_rcollectl is missing required columns: %s",
           paste(missing_cols, collapse = ", ")
         ),
         call. = FALSE
