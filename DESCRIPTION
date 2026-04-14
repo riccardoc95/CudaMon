@@ -23,6 +23,9 @@ Imports:
     ggplot2,
     processx
 Suggests:
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0),
     reticulate
+VignetteBuilder: knitr
 Config/testthat/edition: 3

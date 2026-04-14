@@ -7,6 +7,13 @@ home:
   sidebar:
     html: sidebar.html
 
+articles:
+  - title: Vignettes
+    navbar: Vignettes
+    contents:
+      - getting-started
+      - cudamon-rcollectl
+
 reference:
   - title: Main functions
     contents:
