@@ -23,7 +23,7 @@ plot_usage <- function(x, x_rcollectl = NULL, tz = "UTC", device_index = NULL) {
 
   # If x_rcollectl is provided, normalize it and merge with gpu_df
   if (!is.null(x_rcollectl)) {
-    cpu_df <- Rcollectl:::vizdf(xrcollectl)
+    cpu_df <- Rcollectl:::vizdf(x_rcollectl)
     if (!is.data.frame(cpu_df)) {
       stop("x_rcollectl must be a data.frame", call. = FALSE)
     }
