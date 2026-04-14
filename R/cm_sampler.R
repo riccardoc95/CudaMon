@@ -86,7 +86,7 @@ cm_start <- function(
     cleanup_tree = TRUE
   )
 
-  deadline <- Sys.time()
+  deadline <- 5 + Sys.time() # if the sampler doesn't start within 5 seconds, give up
   started <- FALSE
 
   while (Sys.time() < deadline) {
