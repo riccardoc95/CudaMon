@@ -16,7 +16,6 @@ reference:
       - cm_parser
       - cm_vizdf
       - cm_plot_usage
-      - plot_usage
 
   - title: Session
     contents:
