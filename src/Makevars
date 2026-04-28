@@ -1,2 +1,0 @@
-PKG_CPPFLAGS = -I/usr/share/R/include -I/usr/local/cuda/include -I/usr/local/cuda-13.0/targets/x86_64-linux/include 
-PKG_LIBS = -L/usr/local/cuda-13.0/targets/x86_64-linux/lib/stubs -lnvidia-ml  -L/usr/local/cuda/lib64 -lcudart -lcuda 

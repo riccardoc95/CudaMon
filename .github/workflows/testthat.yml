@@ -1,0 +1,33 @@
+name: Testthat
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test-base:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install R and dependencies from apt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            r-base \
+            r-base-dev \
+            r-cran-testthat \
+            r-cran-ggplot2 \
+            r-cran-processx
+
+      - name: Install package
+        run: |
+          mkdir -p "${HOME}/R/site-library"
+          R CMD INSTALL -l "${HOME}/R/site-library" .
+
+      - name: Run test-base.R
+        env:
+          R_LIBS_USER: ${{ env.HOME }}/R/site-library
+        run: Rscript -e 'source("tests/testthat/helper-gpu.R"); testthat::test_file("tests/testthat/test-base.R")'

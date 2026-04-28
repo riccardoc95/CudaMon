@@ -9,6 +9,10 @@ nvml_get_metrics(device_index)
 \arguments{
 \item{device_index}{Integer, 0‑based GPU index}
 }
+\value{
+A named list with utilization percentages, temperature in Celsius,
+power draw in milliwatts, and memory usage in bytes
+}
 \description{
 Get metrics for a device
 }

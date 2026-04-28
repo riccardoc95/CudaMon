@@ -1,40 +1,103 @@
 #!/bin/sh
 set -e
 
-die() {
-  echo "configure: error: $*" 1>&2
+R_BIN="${R_HOME:+$R_HOME/bin/R}"
+if [ -z "$R_BIN" ] || [ ! -x "$R_BIN" ]; then
+  R_BIN=$(command -v R || true)
+fi
+
+if [ -z "$R_BIN" ]; then
+  echo "configure: error: R executable not found" 1>&2
   exit 1
+fi
+
+R_INCL=$("$R_BIN" CMD config --cppflags)
+
+HAVE_NVML=0
+NVML_CFLAGS=
+NVML_LIBS=
+
+find_nvml_from_cuda_tree() {
+  base="$1"
+  arch="$2"
+
+  lib="$base/targets/${arch}-linux/lib/stubs"
+
+  for inc in \
+    "$base/include" \
+    "$base/targets/${arch}-linux/include"
+  do
+    if [ -f "$inc/nvml.h" ] && [ -f "$lib/libnvidia-ml.so" ]; then
+      echo "$inc|$lib"
+      return 0
+    fi
+  done
+
+  return 1
 }
 
-NVML_PC_FILE=$(pkg-config --variable=pcfile nvml 2>/dev/null || true)
-if [ -z "$NVML_PC_FILE" ]; then
-  NVML_PC_FILE=$(pkg-config --variable=pcfile nvidia-ml 2>/dev/null || true)
-fi
-if [ -z "$NVML_PC_FILE" ]; then
-  NVML_PC_FILE=$(ls /usr/lib/pkgconfig/nvidia-ml-*.pc 2>/dev/null | head -n1 || true)
-fi
-if [ -z "$NVML_PC_FILE" ]; then
-  die "NVML pkg-config file not found. Install the NVIDIA Management Library development package."
+detect_nvml_paths() {
+  arch="$(uname -m)"
+
+  # if NVML_INCLUDE_DIR and NVML_LIB_DIR are set, use them
+  if [ -n "${NVML_INCLUDE_DIR:-}" ] && [ -n "${NVML_LIB_DIR:-}" ] &&
+     [ -f "${NVML_INCLUDE_DIR}/nvml.h" ] &&
+     [ -f "${NVML_LIB_DIR}/libnvidia-ml.so" ]; then
+    echo "${NVML_INCLUDE_DIR}|${NVML_LIB_DIR}"
+    return 0
+  fi
+
+  # if CUDA_HOME or CUDA_PATH are set, try to find NVML there
+  for base in "${CUDA_HOME:-}" "${CUDA_PATH:-}"; do
+    if [ -n "$base" ]; then
+      if result=$(find_nvml_from_cuda_tree "$base" "$arch"); then
+        echo "$result"
+        return 0
+      fi
+    fi
+  done
+
+  # if /usr/local/cuda exists, try to find NVML there
+  if result=$(find_nvml_from_cuda_tree "/usr/local/cuda" "$arch"); then
+    echo "$result"
+    return 0
+  fi
+
+  # if /usr/local/cuda-* exists, try to find NVML there, starting from the highest version
+  for base in $(ls -d /usr/local/cuda-* 2>/dev/null | sort -V -r); do
+    if result=$(find_nvml_from_cuda_tree "$base" "$arch"); then
+      echo "$result"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+if result=$(detect_nvml_paths); then
+  NVML_INCLUDE_DIR=${result%|*}
+  NVML_LIB_DIR=${result#*|}
+
+  NVML_CFLAGS="-I${NVML_INCLUDE_DIR}"
+  NVML_LIBS="-L${NVML_LIB_DIR} -lnvidia-ml"
+  HAVE_NVML=1
 fi
 
-NVML_PKG=$(basename "$NVML_PC_FILE")
-NVML_PKG=${NVML_PKG%.pc}
-
-if [ -z "$CUDA_HOME" ]; then
-  CUDA_HOME="/usr/local/cuda"
+if [ "$HAVE_NVML" -eq 1 ]; then
+  echo "configure: NVML support enabled"
+  echo "configure: NVML include dir: ${NVML_INCLUDE_DIR}"
+  echo "configure: NVML lib dir: ${NVML_LIB_DIR}"
+  PKG_CPPFLAGS="${R_INCL} ${NVML_CFLAGS} -DHAVE_NVML=1"
+  PKG_LIBS="${NVML_LIBS} ${SHLIB_LINK}"
+else
+  echo "configure: NVML support disabled; building stub implementation"
+  PKG_CPPFLAGS="${R_INCL}"
+  PKG_LIBS="${SHLIB_LINK}"
 fi
-if [ ! -d "$CUDA_HOME/include" ]; then
-  die "CUDA include directory not found under $CUDA_HOME"
-fi
 
-NVML_CFLAGS=$(pkg-config --cflags "$NVML_PKG")
-NVML_LIBS=$(pkg-config --libs "$NVML_PKG")
-CUDA_INC="-I${CUDA_HOME}/include"
-CUDA_LIBS="-L${CUDA_HOME}/lib64 -lcudart -lcuda"
-R_INCL=$("$R_HOME"/bin/R CMD config --cppflags)
+sed \
+  -e "s|@PKG_CPPFLAGS@|${PKG_CPPFLAGS}|g" \
+  -e "s|@PKG_LIBS@|${PKG_LIBS}|g" \
+  src/Makevars.in > src/Makevars
 
-PKG_CPPFLAGS="${R_INCL} ${CUDA_INC} ${NVML_CFLAGS}"
-PKG_LIBS="${NVML_LIBS} ${CUDA_LIBS} ${SHLIB_LINK}"
-
-sed -e "s|@PKG_CPPFLAGS@|${PKG_CPPFLAGS}|g" -e "s|@PKG_LIBS@|${PKG_LIBS}|g" src/Makevars.in > src/Makevars
 echo "configure: generated src/Makevars"
