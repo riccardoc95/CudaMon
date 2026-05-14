@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
+# ── R binary detection ──────────────────────────────────────────────────────
 R_BIN="${R_HOME:+$R_HOME/bin/R}"
 if [ -z "$R_BIN" ] || [ ! -x "$R_BIN" ]; then
   R_BIN=$(command -v R || true)
 fi
-
 if [ -z "$R_BIN" ]; then
   echo "configure: error: R executable not found" 1>&2
   exit 1
@@ -13,84 +13,60 @@ fi
 
 R_INCL=$("$R_BIN" CMD config --cppflags)
 
+# ── NVML detection ──────────────────────────────────────────────────────────
 HAVE_NVML=0
 NVML_CFLAGS=
 NVML_LIBS=
 
-find_nvml_from_cuda_tree() {
-  base="$1"
-  arch="$2"
-
-  if [ "$arch" = "aarch64" ]; then
-    candidates="aarch64-linux sbsa-linux"
-  else
-    candidates="$arch-linux"
-  fi
-
-  for tgt in $candidates; do
-    lib="$base/targets/${tgt}/lib/stubs"
-
-    for inc in \
-      "$base/include" \
-      "$base/targets/${tgt}/include"
-    do
-      if [ -f "$inc/nvml.h" ] && [ -f "$lib/libnvidia-ml.so" ]; then
-        echo "$inc|$lib"
-        return 0
-      fi
-    done
-  done
-
-  return 1
-}
-
-detect_nvml_paths() {
-  arch="$(uname -m)"
-
-  # if NVML_INCLUDE_DIR and NVML_LIB_DIR are set, use them
-  if [ -n "${NVML_INCLUDE_DIR:-}" ] && [ -n "${NVML_LIB_DIR:-}" ] &&
-     [ -f "${NVML_INCLUDE_DIR}/nvml.h" ] &&
-     [ -f "${NVML_LIB_DIR}/libnvidia-ml.so" ]; then
-    echo "${NVML_INCLUDE_DIR}|${NVML_LIB_DIR}"
-    return 0
-  fi
-
-  # if CUDA_HOME or CUDA_PATH are set, try to find NVML there
-  for base in "${CUDA_HOME:-}" "${CUDA_PATH:-}"; do
-    if [ -n "$base" ]; then
-      if result=$(find_nvml_from_cuda_tree "$base" "$arch"); then
-        echo "$result"
-        return 0
-      fi
-    fi
-  done
-
-  # if /usr/local/cuda exists, try to find NVML there
-  if result=$(find_nvml_from_cuda_tree "/usr/local/cuda" "$arch"); then
-    echo "$result"
-    return 0
-  fi
-
-  # if /usr/local/cuda-* exists, try to find NVML there, starting from the highest version
-  for base in $(ls -d /usr/local/cuda-* 2>/dev/null | sort -V -r); do
-    if result=$(find_nvml_from_cuda_tree "$base" "$arch"); then
-      echo "$result"
-      return 0
-    fi
-  done
-
-  return 1
-}
-
-if result=$(detect_nvml_paths); then
-  NVML_INCLUDE_DIR=${result%|*}
-  NVML_LIB_DIR=${result#*|}
-
-  NVML_CFLAGS="-I${NVML_INCLUDE_DIR}"
-  NVML_LIBS="-L${NVML_LIB_DIR} -lnvidia-ml"
+if pkg-config --exists nvml 2>/dev/null; then
+  NVML_CFLAGS=$(pkg-config --cflags nvml)
+  NVML_LIBS=$(pkg-config --libs nvml)
   HAVE_NVML=1
 fi
 
+if [ "$HAVE_NVML" -eq 0 ] && [ -n "$NVML_INCLUDE_DIR" ] && [ -n "$NVML_LIB_DIR" ]; then
+  if [ -f "$NVML_INCLUDE_DIR/nvml.h" ] && [ -f "$NVML_LIB_DIR/libnvidia-ml.so" ]; then
+    NVML_CFLAGS="-I${NVML_INCLUDE_DIR}"
+    NVML_LIBS="-L${NVML_LIB_DIR} -lnvidia-ml"
+    HAVE_NVML=1
+  fi
+fi
+
+find_nvml_in_tree() {
+  base="$1"
+  for inc in "$base/include" "$base/targets/"*"/include"; do
+    [ -f "$inc/nvml.h" ] || continue
+    for lib in "$base/targets/"*"/lib/stubs" "$base/lib64" "$base/lib"; do
+      [ -f "$lib/libnvidia-ml.so" ] || continue
+      NVML_INCLUDE_DIR="$inc"
+      NVML_LIB_DIR="$lib"
+      NVML_CFLAGS="-I${NVML_INCLUDE_DIR}"
+      NVML_LIBS="-L${NVML_LIB_DIR} -lnvidia-ml"
+      HAVE_NVML=1
+      return 0
+    done
+  done
+  return 1
+}
+
+if [ "$HAVE_NVML" -eq 0 ]; then
+  bases=""
+  [ -n "${CUDA_HOME:-}" ] && bases="$CUDA_HOME"
+  [ -n "${CUDA_PATH:-}" ] && bases="$bases $CUDA_PATH"
+  bases="$bases /usr/local/cuda"
+  for d in /usr/local/cuda-*; do
+    [ -d "$d" ] && bases="$bases $d"
+  done
+
+  for base in $bases; do
+    [ -d "$base" ] || continue
+    if find_nvml_in_tree "$base"; then
+      break
+    fi
+  done
+fi
+
+# ── Conditional output & Makevars generation ────────────────────────────────
 if [ "$HAVE_NVML" -eq 1 ]; then
   echo "configure: NVML support enabled"
   echo "configure: NVML include dir: ${NVML_INCLUDE_DIR}"
@@ -107,5 +83,3 @@ sed \
   -e "s|@PKG_CPPFLAGS@|${PKG_CPPFLAGS}|g" \
   -e "s|@PKG_LIBS@|${PKG_LIBS}|g" \
   src/Makevars.in > src/Makevars
-
-echo "configure: generated src/Makevars"
