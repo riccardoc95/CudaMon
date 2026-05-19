@@ -1,0 +1,23 @@
+R/nvml.R
+  s_8a9c7aeb47f523::t_3449838c0d089f 151-163
+man/CudaMonSession.Rd
+  s_8a9c7aeb47f523::t_1b8fdf6e052925 16-32,34-51
+R/cm_session.R
+  s_8a9c7aeb47f523::t_3449838c0d089f 3-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "399b055bf249875f0abd8da4913fd282c1a87db9",
+  "prompts": {},
+  "sessions": {
+    "s_8a9c7aeb47f523": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3b68-8cf5-7040-9a00-b479070b28cb",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
