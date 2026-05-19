@@ -1,0 +1,19 @@
+.BBSoptions
+  s_8a9c7aeb47f523::t_e5cc79b3ded033 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "d4f4c3473fa22cf5e9a917c5e24d2d05d9f3362e",
+  "prompts": {},
+  "sessions": {
+    "s_8a9c7aeb47f523": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3b68-8cf5-7040-9a00-b479070b28cb",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
