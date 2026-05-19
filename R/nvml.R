@@ -148,8 +148,19 @@ nvml_list_compute_processes <- function(device_index = NULL, pid = NULL) {
 #' Get metrics for a device
 #'
 #' @param device_index Integer, 0‑based GPU index
-#' @return A named list with utilization percentages, temperature in Celsius,
-#'   power draw in milliwatts, and memory usage in bytes
+#' @return A named list with device-level metrics:
+#' \describe{
+#'   \item{gpu_utilization_pct}{Percent of the sampling interval during which
+#'     at least one kernel was executing on the GPU. This is an activity ratio,
+#'     not a measure of how saturated the GPU cores were.}
+#'   \item{memory_utilization_pct}{Percent of the sampling interval during
+#'     which global device memory was being read from or written to. This is
+#'     memory-controller activity, not the fraction of GPU memory allocated.}
+#'   \item{temperature_c}{GPU temperature in degrees Celsius.}
+#'   \item{power_usage_mw}{Instantaneous board power draw in milliwatts.}
+#'   \item{memory_used_bytes}{Bytes of device memory currently allocated.}
+#'   \item{memory_total_bytes}{Total bytes of device memory available.}
+#' }
 #' @noRd
 nvml_get_metrics <- function(device_index) {
   if (!is.numeric(device_index) || length(device_index) != 1L) {
