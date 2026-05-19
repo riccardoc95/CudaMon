@@ -13,29 +13,6 @@ device_index <- if (length(args) >= 7 && nzchar(args[[7]])) {
 
 suppressPackageStartupMessages(library(CudaMon))
 
-process_tree_pids <- function(pid, include_descendants = TRUE) {
-  pid <- as.integer(pid)
-  if (!include_descendants) {
-    return(pid)
-  }
-
-  root <- tryCatch(
-    ps::ps_handle(pid),
-    error = function(...) NULL
-  )
-  if (is.null(root)) {
-    return(pid)
-  }
-
-  children <- tryCatch(
-    ps::ps_children(root, recursive = TRUE),
-    error = function(...) list()
-  )
-  child_pids <- vapply(children, ps::ps_pid, integer(1))
-
-  as.integer(c(pid, child_pids))
-}
-
 writeLines("", witness_path)
 on.exit(unlink(witness_path), add = TRUE)
 
@@ -73,7 +50,7 @@ while (TRUE) {
     )
   }
 
-  tracked_pids <- process_tree_pids(
+  tracked_pids <- CudaMon:::process_tree_pids(
     pid = pid,
     include_descendants = include_descendants
   )
