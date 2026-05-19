@@ -1,0 +1,23 @@
+R/viz.R
+  s_8a9c7aeb47f523::t_51893afeb1538c 92,98,101,117,124
+DESCRIPTION
+  s_8a9c7aeb47f523::t_51893afeb1538c 28-29
+NAMESPACE
+  s_8a9c7aeb47f523::t_9de14c364b277f 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "622f2eebfca5d0cd549787067cda520a68369a1c",
+  "prompts": {},
+  "sessions": {
+    "s_8a9c7aeb47f523": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3b68-8cf5-7040-9a00-b479070b28cb",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
