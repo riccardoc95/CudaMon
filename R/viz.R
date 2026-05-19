@@ -94,10 +94,10 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
   plot_df <- cm_vizdf(x, tz = tz, device_index = device_index)
   p <- ggplot2::ggplot(
     plot_df,
-    ggplot2::aes(x = rlang::.data$tm, y = rlang::.data$value)
+    ggplot2::aes(x = plot_df$tm, y = plot_df$value)
   ) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(ggplot2::vars(rlang::.data$type), scales = "free") +
+    ggplot2::facet_grid(ggplot2::vars(plot_df$type), scales = "free") +
     ggplot2::scale_x_datetime(
       timezone = tz,
       date_labels = "%H:%M:%S"
@@ -105,7 +105,7 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
 
   events_df <- x$events
   if (is.data.frame(events_df) && nrow(events_df) > 0L &&
-      "timestamp" %in% names(events_df) && "step" %in% names(events_df)) {
+    "timestamp" %in% names(events_df) && "step" %in% names(events_df)) {
     events_df <- events_df[, c("timestamp", "step"), drop = FALSE]
     events_df$tm <- as.POSIXct(events_df$timestamp, tz = "UTC")
     events_df$label_y <- Inf
@@ -113,7 +113,7 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
     p <- p +
       ggplot2::geom_vline(
         data = events_df,
-        ggplot2::aes(xintercept = rlang::.data$tm),
+        ggplot2::aes(xintercept = events_df$tm),
         inherit.aes = FALSE,
         linetype = "dashed",
         color = "firebrick"
@@ -121,9 +121,9 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
       ggplot2::geom_text(
         data = events_df,
         ggplot2::aes(
-          x = rlang::.data$tm,
-          y = rlang::.data$label_y,
-          label = rlang::.data$step
+          x = events_df$tm,
+          y = events_df$label_y,
+          label = events_df$step
         ),
         inherit.aes = FALSE,
         angle = 90,
