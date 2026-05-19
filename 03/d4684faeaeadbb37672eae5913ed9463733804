@@ -1,0 +1,23 @@
+DESCRIPTION
+  s_8a9c7aeb47f523::t_1610f8cecb562c 28
+inst/scripts/nvml_sampler.R
+  s_8a9c7aeb47f523::t_1610f8cecb562c 22-23,26
+  s_8a9c7aeb47f523::t_f92a6eff9cca96 30-34
+  s_8a9c7aeb47f523::t_6cba1c161a340c 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "03d4684faeaeadbb37672eae5913ed9463733804",
+  "prompts": {},
+  "sessions": {
+    "s_8a9c7aeb47f523": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3b68-8cf5-7040-9a00-b479070b28cb",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
