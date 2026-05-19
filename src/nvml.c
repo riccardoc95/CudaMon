@@ -236,8 +236,14 @@ SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
         utilization.memory = NA_INTEGER;
     }
 
-    result = nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp);
-    if (result != NVML_SUCCESS) {
+    nvmlTemperature_t temperature = {0};
+    temperature.version = nvmlTemperature_v1;
+    temperature.sensorType = NVML_TEMPERATURE_GPU;
+
+    result = nvmlDeviceGetTemperatureV(device, &temperature);
+    if (result == NVML_SUCCESS && temperature.temperature >= 0) {
+        temp = (unsigned int) temperature.temperature;
+    } else {
         temp = NA_INTEGER;
     }
 
