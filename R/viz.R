@@ -89,15 +89,16 @@ cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
 #' @param device_index Optional integer GPU index. If `NULL`, include all
 #'   sampled devices.
 #' @return A ggplot object with one facet per metric.
+#' @importFrom rlang .data
 #' @export
 cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
   plot_df <- cm_vizdf(x, tz = tz, device_index = device_index)
   p <- ggplot2::ggplot(
     plot_df,
-    ggplot2::aes(x = tm, y = value)
+    ggplot2::aes(x = .data$tm, y = .data$value)
   ) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(ggplot2::vars(type), scales = "free") +
+    ggplot2::facet_grid(ggplot2::vars(.data$type), scales = "free") +
     ggplot2::scale_x_datetime(
       timezone = tz,
       date_labels = "%H:%M:%S"
@@ -113,14 +114,14 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
     p <- p +
       ggplot2::geom_vline(
         data = events_df,
-        ggplot2::aes(xintercept = tm),
+        ggplot2::aes(xintercept = .data$tm),
         inherit.aes = FALSE,
         linetype = "dashed",
         color = "firebrick"
       ) +
       ggplot2::geom_text(
         data = events_df,
-        ggplot2::aes(x = tm, y = label_y, label = step),
+        ggplot2::aes(x = .data$tm, y = .data$label_y, label = .data$step),
         inherit.aes = FALSE,
         angle = 90,
         vjust = 1.2,
