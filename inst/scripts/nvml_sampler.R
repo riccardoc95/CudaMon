@@ -19,44 +19,21 @@ process_tree_pids <- function(pid, include_descendants = TRUE) {
     return(pid)
   }
 
-  ps_output <- tryCatch(
-    system2("ps", c("-e", "-o", "pid=", "-o", "ppid="), stdout = TRUE, stderr = FALSE),
-    warning = function(...) character(),
-    error = function(...) character()
-  )
-
-  if (length(ps_output) == 0L) {
-    return(pid)
-  }
-
-  proc_table <- tryCatch(
-    utils::read.table(
-      text = ps_output,
-      col.names = c("pid", "ppid"),
-      stringsAsFactors = FALSE
-    ),
+  root <- tryCatch(
+    ps::ps_handle(pid),
     error = function(...) NULL
   )
-
-  if (is.null(proc_table) || nrow(proc_table) == 0L) {
+  if (is.null(root)) {
     return(pid)
   }
 
-  seen <- pid
-  frontier <- pid
+  children <- tryCatch(
+    ps::ps_children(root, recursive = TRUE),
+    error = function(...) list()
+  )
+  child_pids <- vapply(children, ps::ps_pid, integer(1))
 
-  while (length(frontier) > 0L) {
-    children <- proc_table$pid[proc_table$ppid %in% frontier]
-    children <- setdiff(unique(as.integer(children)), seen)
-    if (length(children) == 0L) {
-      break
-    }
-
-    seen <- c(seen, children)
-    frontier <- children
-  }
-
-  as.integer(seen)
+  as.integer(c(pid, child_pids))
 }
 
 writeLines("", witness_path)
