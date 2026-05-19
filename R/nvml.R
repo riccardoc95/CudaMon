@@ -7,6 +7,7 @@
 #'
 #' @param code Integer NVML return code (0 == success)
 #' @return Invisible TRUE on success; otherwise stops with an error
+#' @noRd
 nvml_check_status <- function(code) {
   if (!is.numeric(code) && !is.integer(code)) {
     stop("Internal error: NVML status code is not numeric", call. = FALSE)
@@ -25,7 +26,7 @@ nvml_check_status <- function(code) {
 
 
 #' Number of NVML‑visible devices
-#' @export
+#' @noRd
 nvml_device_count <- function() {
   cnt <- .Call("nvml_device_count_c", PACKAGE = "CudaMon")
   if (cnt < 0L) {
@@ -37,7 +38,7 @@ nvml_device_count <- function() {
 #' Check whether NVML is available
 #'
 #' @return `TRUE` if NVML can be initialised and queried, otherwise `FALSE`
-#' @export
+#' @noRd
 nvml_is_available <- function() {
   isTRUE(.Call("nvml_is_available_c", PACKAGE = "CudaMon"))
 }
@@ -45,7 +46,7 @@ nvml_is_available <- function() {
 #' List NVML-visible devices
 #'
 #' @return A data frame with one row per GPU and stable device metadata
-#' @export
+#' @noRd
 nvml_list_devices <- function() {
   count <- nvml_device_count()
 
@@ -83,7 +84,7 @@ nvml_list_devices <- function() {
 #' @param device_index Optional integer GPU index. If `NULL`, query all devices.
 #' @param pid Optional integer vector used to filter the returned processes.
 #' @return A data frame with one row per GPU process observation
-#' @export
+#' @noRd
 nvml_list_compute_processes <- function(device_index = NULL, pid = NULL) {
   if (is.null(device_index)) {
     indices <- seq_len(nvml_device_count()) - 1L
@@ -149,7 +150,7 @@ nvml_list_compute_processes <- function(device_index = NULL, pid = NULL) {
 #' @param device_index Integer, 0‑based GPU index
 #' @return A named list with utilization percentages, temperature in Celsius,
 #'   power draw in milliwatts, and memory usage in bytes
-#' @export
+#' @noRd
 nvml_get_metrics <- function(device_index) {
   if (!is.numeric(device_index) || length(device_index) != 1L) {
     stop("device_index must be a single numeric value", call. = FALSE)
