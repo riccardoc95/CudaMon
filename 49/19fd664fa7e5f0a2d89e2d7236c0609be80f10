@@ -1,0 +1,49 @@
+man/cm_plot_usage.Rd
+  s_274b2d9a95b671::t_87fe7b8e9483f8 23-37
+man/cm_stop.Rd
+  s_274b2d9a95b671::t_87fe7b8e9483f8 18,23
+  s_274b2d9a95b671::t_a8993bbc2ea8b4 19-22
+R/cm_timestamp.R
+  s_274b2d9a95b671::t_8364933257b7f1 6
+  s_274b2d9a95b671::t_d616e067fe71e4 7-11
+man/cm_vizdf.Rd
+  s_274b2d9a95b671::t_87fe7b8e9483f8 23-37
+man/CudaMonSession.Rd
+  s_274b2d9a95b671::t_87fe7b8e9483f8 65-68
+man/cm_parser.Rd
+  s_274b2d9a95b671::t_87fe7b8e9483f8 19,27
+  s_274b2d9a95b671::t_a8993bbc2ea8b4 20-26
+man/cm_start.Rd
+  s_274b2d9a95b671::t_87fe7b8e9483f8 37-42
+R/cm_start.R
+  s_274b2d9a95b671::t_8364933257b7f1 12-16
+R/cm_session.R
+  s_274b2d9a95b671::t_8364933257b7f1 42-44
+man/cm_timestamp.Rd
+  s_274b2d9a95b671::t_87fe7b8e9483f8 20,26
+  s_274b2d9a95b671::t_a8993bbc2ea8b4 21-25
+R/cm_viz.R
+  s_274b2d9a95b671::t_8364933257b7f1 8-21,106-119
+R/cm_stop.R
+  s_274b2d9a95b671::t_d616e067fe71e4 6-9
+  s_274b2d9a95b671::t_8364933257b7f1 5
+R/cm_parser.R
+  s_274b2d9a95b671::t_05b7a7bc74ac5f 7-13
+  s_274b2d9a95b671::t_8364933257b7f1 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "4919fd664fa7e5f0a2d89e2d7236c0609be80f10",
+  "prompts": {},
+  "sessions": {
+    "s_274b2d9a95b671": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4469-2e70-7df3-b28c-bc6744d43afe",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
