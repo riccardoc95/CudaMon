@@ -36,7 +36,7 @@ find_nvml_in_tree() {
   base="$1"
   for inc in "$base/include" "$base/targets/"*"/include"; do
     [ -f "$inc/nvml.h" ] || continue
-    for lib in "$base/targets/"*"/lib/stubs" "$base/lib64" "$base/lib"; do
+    for lib in "$base/targets/"*"/lib" "$base/lib64" "$base/lib"; do
       [ -f "$lib/libnvidia-ml.so" ] || continue
       NVML_INCLUDE_DIR="$inc"
       NVML_LIB_DIR="$lib"
