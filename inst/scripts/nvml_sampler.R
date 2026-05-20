@@ -50,7 +50,7 @@ while (TRUE) {
     )
   }
 
-  tracked_pids <- CudaMon:::process_tree_pids(
+  tracked_pids <- CudaMon:::process_pids(
     pid = pid,
     include_descendants = include_descendants
   )

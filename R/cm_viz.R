@@ -92,6 +92,10 @@ cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
 #' @export
 cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
   plot_df <- cm_vizdf(x, tz = tz, device_index = device_index)
+
+  # Check: I don't know if it is the best way to avoid R CMD check warnings
+  tm <- value <- type <- label_y <- step <- NULL
+
   p <- ggplot2::ggplot(
     plot_df,
     ggplot2::aes(x = tm, y = value)

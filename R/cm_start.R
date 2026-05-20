@@ -11,12 +11,12 @@
 #' @return A list with sampler metadata and class `nvml_sampler`.
 #' @export
 cm_start <- function(
-    period = 1,
-    pid = Sys.getpid(),
-    include_descendants = TRUE,
-    device_index = NULL,
-    log = NULL,
-    path_prefix = NULL
+  period = 1,
+  pid = Sys.getpid(),
+  include_descendants = TRUE,
+  device_index = NULL,
+  log = NULL,
+  path_prefix = NULL
 ) {
   if (is.null(path_prefix)) {
     path_prefix <- tempfile(pattern = sprintf("cudamon-%d-", as.integer(pid)))
@@ -144,121 +144,5 @@ cm_start <- function(
       )
     ),
     class = "nvml_sampler"
-  )
-}
-
-#' Record a workflow step during an active NVML sampling session
-#'
-#' @param sampler A sampler object returned by `cm_start()`.
-#' @param step A short label identifying the current workflow step.
-#' @return Invisibly returns the sampler.
-#' @export
-cm_timestamp <- function(sampler, step) {
-  if (!inherits(sampler, "nvml_sampler")) {
-    stop("sampler must inherit from 'nvml_sampler'", call. = FALSE)
-  }
-
-  if (!is.character(step) || length(step) != 1L || !nzchar(step)) {
-    stop("step must be a single non-empty string", call. = FALSE)
-  }
-
-  event_row <- data.frame(
-    timestamp = format(Sys.time(), tz = "UTC", usetz = TRUE),
-    root_pid = as.integer(sampler$root_pid),
-    step = step,
-    stringsAsFactors = FALSE
-  )
-
-  utils::write.table(
-    event_row,
-    file = sampler$paths$events,
-    sep = ",",
-    row.names = FALSE,
-    col.names = !file.exists(sampler$paths$events),
-    append = file.exists(sampler$paths$events),
-    qmethod = "double"
-  )
-  invisible(sampler)
-}
-
-#' Stop an NVML background sampler
-#'
-#' @param sampler A sampler object returned by `cm_start()`.
-#' @return Invisibly returns the sampler.
-#' @export
-cm_stop <- function(sampler) {
-  if (!inherits(sampler, "nvml_sampler")) {
-    stop("sampler must inherit from 'nvml_sampler'", call. = FALSE)
-  }
-
-  if (!is.null(sampler$process)) {
-    wait_seconds <- if (!is.null(sampler$period) && is.finite(sampler$period)) {
-      max(0, as.numeric(sampler$period))
-    } else {
-      1
-    }
-    Sys.sleep(wait_seconds)
-    sampler$process$interrupt()
-    sampler$process$wait(timeout = 1000L)
-    if (sampler$process$is_alive()) {
-      sampler$process$kill()
-    }
-  }
-  invisible(sampler)
-}
-
-#' Read CSV output produced by the NVML sampler
-#'
-#' @param sampler A sampler object returned by `cm_start()`, or a
-#'   character path prefix used to build the sampler output paths.
-#' @return A `CudaMonSession` object.
-#' @export
-cm_parser <- function(sampler) {
-  if (inherits(sampler, "nvml_sampler")) {
-    device_metrics_path <- sampler$paths$device_metrics
-    compute_processes_path <- sampler$paths$compute_processes
-    events_path <- sampler$paths$events
-    log_path <- sampler$paths$log
-    metadata <- list(
-      root_pid = sampler$root_pid,
-      include_descendants = sampler$include_descendants,
-      device_index = sampler$device_index
-    )
-  } else if (is.character(sampler) && length(sampler) == 1L && nzchar(sampler)) {
-    device_metrics_path <- paste0(sampler, "_device_metrics.csv")
-    compute_processes_path <- paste0(sampler, "_compute_processes.csv")
-    events_path <- paste0(sampler, "_events.csv")
-    log_path <- paste0(sampler, "_sampler.log")
-    metadata <- list()
-  } else {
-    stop("sampler must be an 'nvml_sampler' object or a path prefix", call. = FALSE)
-  }
-
-  CudaMonSession(
-    device_metrics = if (!file.exists(device_metrics_path) ||
-        isTRUE(file.info(device_metrics_path)$size == 0)) {
-      data.frame()
-    } else {
-      utils::read.csv(device_metrics_path, stringsAsFactors = FALSE)
-    },
-    compute_processes = if (!file.exists(compute_processes_path) ||
-        isTRUE(file.info(compute_processes_path)$size == 0)) {
-      data.frame()
-    } else {
-      utils::read.csv(compute_processes_path, stringsAsFactors = FALSE)
-    },
-    events = if (!file.exists(events_path) ||
-        isTRUE(file.info(events_path)$size == 0)) {
-      data.frame()
-    } else {
-      utils::read.csv(events_path, stringsAsFactors = FALSE)
-    },
-    paths = list(
-      device_metrics = device_metrics_path,
-      compute_processes = compute_processes_path,
-      events = events_path,
-      log = log_path
-    ),
-    metadata = metadata
   )
 }
