@@ -100,7 +100,7 @@ cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
     plot_df,
     ggplot2::aes(x = tm, y = value)
   ) +
-    ggplot2::geom_point() +
+    ggplot2::geom_point(na.rm = TRUE) +
     ggplot2::facet_grid(ggplot2::vars(type), scales = "free") +
     ggplot2::scale_x_datetime(
       timezone = tz,
