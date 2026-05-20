@@ -50,6 +50,8 @@ does not apply or is not reported.}
 when it does not apply or is not reported.}
 }}
 
+\item{events}{Data frame with event markers recorded during sampling.}
+
 \item{paths}{Named list of output paths.}
 
 \item{metadata}{Named list with session metadata.}

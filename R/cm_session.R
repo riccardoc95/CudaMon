@@ -35,16 +35,18 @@
 #'     \item{compute_instance_id}{MIG compute instance identifier, or \code{NA}
 #'       when it does not apply or is not reported.}
 #'   }
+#' @param events Data frame with event markers recorded during sampling.
 #' @param paths Named list of output paths.
 #' @param metadata Named list with session metadata.
 #' @return An object of class `CudaMonSession`.
 #' @export
 CudaMonSession <- function(
-    device_metrics = data.frame(),
-    compute_processes = data.frame(),
-    events = data.frame(),
-    paths = list(),
-    metadata = list()) {
+  device_metrics = data.frame(),
+  compute_processes = data.frame(),
+  events = data.frame(),
+  paths = list(),
+  metadata = list()
+) {
   structure(
     list(
       device_metrics = device_metrics,
