@@ -1,0 +1,19 @@
+configure
+  s_274b2d9a95b671::t_6dd44c2660d1fc 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "348f0fe792b75de070d3936141a4ca4835bc4681",
+  "prompts": {},
+  "sessions": {
+    "s_274b2d9a95b671": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4469-2e70-7df3-b28c-bc6744d43afe",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
