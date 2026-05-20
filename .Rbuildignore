@@ -1,2 +1,10 @@
 ^_pkgdown\.yml$
 ^\.github$
+^docs$
+^Rd2\.pdf$
+^src/Makevars$
+^src/.*[.]o$
+^src/.*[.]so$
+^[^/]*[.]Rcheck$
+^[^/]*[.]tar[.]gz$
+^.*[.]log$
