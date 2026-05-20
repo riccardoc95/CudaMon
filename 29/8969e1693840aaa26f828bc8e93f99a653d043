@@ -1,0 +1,21 @@
+.Rbuildignore
+  s_274b2d9a95b671::t_45fed3a7d28942 3-10
+DESCRIPTION
+  s_274b2d9a95b671::t_45fed3a7d28942 3,19-22,24-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "298969e1693840aaa26f828bc8e93f99a653d043",
+  "prompts": {},
+  "sessions": {
+    "s_274b2d9a95b671": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4469-2e70-7df3-b28c-bc6744d43afe",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
