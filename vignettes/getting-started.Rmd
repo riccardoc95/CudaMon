@@ -9,8 +9,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -35,7 +35,7 @@ If no GPU is available, the code below is still useful as a reference, but it wi
 
 The simplest workflow starts a sampler tied to the current R session. By default, `CudaMon` samples once per second and includes descendant processes.
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 library(CudaMon)
 
 sampler <- cm_start()
@@ -43,10 +43,10 @@ sampler <- cm_start()
 
 You can customize the sampling interval or limit collection to a specific device:
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 sampler <- cm_start(
-  period = 0.5,
-  device_index = 0
+    period = 0.5,
+    device_index = 0
 )
 ```
 
@@ -54,7 +54,7 @@ sampler <- cm_start(
 
 While the sampler is running, execute the code you want to profile. Use `cm_timestamp()` to record named events that will later appear as vertical markers in the plot.
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 cm_timestamp(sampler, "initialization")
 
 Sys.sleep(2)
@@ -70,7 +70,7 @@ cm_timestamp(sampler, "evaluation")
 
 When the workload is finished, stop the background sampler and parse the CSV output into a `CudaMonSession`.
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 cm_stop(sampler)
 
 session <- cm_parser(sampler)
@@ -88,9 +88,11 @@ The parsed session contains:
 
 Use `cm_plot_usage()` for the built-in GPU plot.
 
-```{r eval = FALSE}
-p <- cm_plot_usage(session, tz = "Europe/Rome")
-p
+```{r eval = TRUE}
+if (length(session$compute_processes) > 0){
+    p <- cm_plot_usage(session, tz = "Europe/Rome")
+    p
+}
 ```
 
 This plot shows device utilization, GPU memory, temperature, and power over time. If you recorded events, they are added as vertical dashed lines.
@@ -98,7 +100,7 @@ This plot shows device utilization, GPU memory, temperature, and power over time
 
 ## Complete example
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 library(CudaMon)
 
 sampler <- cm_start()
@@ -114,5 +116,12 @@ Sys.sleep(2)
 cm_stop(sampler)
 
 session <- cm_parser(sampler)
-cm_plot_usage(session, tz = "Europe/Rome")
+if (length(session$compute_processes) > 0){
+    cm_plot_usage(session, tz = "Europe/Rome")
+}
+```
+
+## Session Info
+```{r eval = TRUE}
+sessionInfo()
 ```

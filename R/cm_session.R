@@ -39,6 +39,9 @@
 #' @param paths Named list of output paths.
 #' @param metadata Named list with session metadata.
 #' @return An object of class `CudaMonSession`.
+#' @examples
+#' session <- CudaMonSession()
+#' session
 #' @export
 CudaMonSession <- function(
   device_metrics = data.frame(),

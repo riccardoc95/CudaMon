@@ -3,6 +3,12 @@
 #' @param sampler A sampler object returned by `cm_start()`.
 #' @param step A short label identifying the current workflow step.
 #' @return Invisibly returns the sampler.
+#' @examples
+#' if (CudaMon:::nvml_is_available() && CudaMon:::nvml_device_count() > 0L) {
+#'   sampler <- cm_start(period = 1)
+#'   cm_timestamp(sampler, "example")
+#'   cm_stop(sampler)
+#' }
 #' @export
 cm_timestamp <- function(sampler, step) {
   if (!inherits(sampler, "nvml_sampler")) {

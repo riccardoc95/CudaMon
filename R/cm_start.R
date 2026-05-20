@@ -9,6 +9,11 @@
 #'   generated automatically. Three files will be created:
 #'   `*_device_metrics.csv`, `*_compute_processes.csv`, and `*_events.csv`.
 #' @return A list with sampler metadata and class `nvml_sampler`.
+#' @examples
+#' if (CudaMon:::nvml_is_available() && CudaMon:::nvml_device_count() > 0L) {
+#'   sampler <- cm_start(period = 1)
+#'   cm_stop(sampler)
+#' }
 #' @export
 cm_start <- function(
   period = 1,

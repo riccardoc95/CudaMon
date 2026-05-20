@@ -5,6 +5,20 @@
 #' @param device_index Optional integer GPU index. If `NULL`, include all
 #'   sampled devices.
 #' @return A long-format data frame suitable for plotting.
+#' @examples
+#' device_metrics <- data.frame(
+#'   timestamp = format(Sys.time() + 0:1, tz = "UTC", usetz = TRUE),
+#'   sampler_pid = Sys.getpid(),
+#'   device_index = 0L,
+#'   gpu_utilization_pct = c(10L, 25L),
+#'   memory_utilization_pct = c(5L, 12L),
+#'   temperature_c = c(40L, 42L),
+#'   power_usage_mw = c(50000L, 53000L),
+#'   memory_used_bytes = c(1e9, 1.2e9),
+#'   memory_total_bytes = 8e9
+#' )
+#' session <- CudaMonSession(device_metrics = device_metrics)
+#' cm_vizdf(session)
 #' @export
 cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
   if (!inherits(x, "CudaMonSession")) {
@@ -89,6 +103,20 @@ cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
 #' @param device_index Optional integer GPU index. If `NULL`, include all
 #'   sampled devices.
 #' @return A ggplot object with one facet per metric.
+#' @examples
+#' device_metrics <- data.frame(
+#'   timestamp = format(Sys.time() + 0:1, tz = "UTC", usetz = TRUE),
+#'   sampler_pid = Sys.getpid(),
+#'   device_index = 0L,
+#'   gpu_utilization_pct = c(10L, 25L),
+#'   memory_utilization_pct = c(5L, 12L),
+#'   temperature_c = c(40L, 42L),
+#'   power_usage_mw = c(50000L, 53000L),
+#'   memory_used_bytes = c(1e9, 1.2e9),
+#'   memory_total_bytes = 8e9
+#' )
+#' session <- CudaMonSession(device_metrics = device_metrics)
+#' cm_plot_usage(session)
 #' @export
 cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
   plot_df <- cm_vizdf(x, tz = tz, device_index = device_index)

@@ -17,3 +17,10 @@ Invisibly returns the sampler.
 \description{
 Record a workflow step during an active NVML sampling session
 }
+\examples{
+if (CudaMon:::nvml_is_available() && CudaMon:::nvml_device_count() > 0L) {
+  sampler <- cm_start(period = 1)
+  cm_timestamp(sampler, "example")
+  cm_stop(sampler)
+}
+}

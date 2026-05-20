@@ -16,3 +16,12 @@ A \code{CudaMonSession} object.
 \description{
 Read CSV output produced by the NVML sampler
 }
+\examples{
+if (CudaMon:::nvml_is_available() && CudaMon:::nvml_device_count() > 0L) {
+  sampler <- cm_start(period = 1)
+  Sys.sleep(1)
+  cm_stop(sampler)
+  session <- cm_parser(sampler)
+  session
+}
+}

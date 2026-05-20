@@ -2,6 +2,11 @@
 #'
 #' @param sampler A sampler object returned by `cm_start()`.
 #' @return Invisibly returns the sampler.
+#' @examples
+#' if (CudaMon:::nvml_is_available() && CudaMon:::nvml_device_count() > 0L) {
+#'   sampler <- cm_start(period = 1)
+#'   cm_stop(sampler)
+#' }
 #' @export
 cm_stop <- function(sampler) {
   if (!inherits(sampler, "nvml_sampler")) {

@@ -62,3 +62,7 @@ An object of class \code{CudaMonSession}.
 \description{
 Construct a CudaMon session object
 }
+\examples{
+session <- CudaMonSession()
+session
+}

@@ -3,6 +3,14 @@
 #' @param sampler A sampler object returned by `cm_start()`, or a
 #'   character path prefix used to build the sampler output paths.
 #' @return A `CudaMonSession` object.
+#' @examples
+#' if (CudaMon:::nvml_is_available() && CudaMon:::nvml_device_count() > 0L) {
+#'   sampler <- cm_start(period = 1)
+#'   Sys.sleep(1)
+#'   cm_stop(sampler)
+#'   session <- cm_parser(sampler)
+#'   session
+#' }
 #' @export
 cm_parser <- function(sampler) {
   if (inherits(sampler, "nvml_sampler")) {
