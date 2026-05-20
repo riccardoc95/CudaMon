@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CudaMon</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,11 +58,82 @@
 
 
 <dl><dt id="arg-device-metrics">device_metrics<a class="anchor" aria-label="anchor" href="#arg-device-metrics"></a></dt>
-<dd><p>Data frame with GPU device-level samples.</p></dd>
+<dd><p>Data frame with GPU device-level samples. Expected
+columns include:</p><dl><dt>timestamp</dt>
+<dd><p>Sample timestamp in UTC.</p></dd>
+
+<dt>sampler_pid</dt>
+<dd><p>Root process identifier tracked by the sampler.</p></dd>
+
+<dt>device_index</dt>
+<dd><p>Zero-based GPU device index.</p></dd>
+
+<dt>gpu_utilization_pct</dt>
+<dd><p>Percent of the sampling interval during which
+at least one kernel was executing on the GPU. This is an activity
+ratio, not a measure of how saturated the GPU cores were.</p></dd>
+
+<dt>memory_utilization_pct</dt>
+<dd><p>Percent of the sampling interval during
+which global device memory was being read from or written to. This is
+memory-controller activity, not the fraction of GPU memory allocated.</p></dd>
+
+<dt>temperature_c</dt>
+<dd><p>GPU temperature in degrees Celsius.</p></dd>
+
+<dt>power_usage_mw</dt>
+<dd><p>Instantaneous board power draw in milliwatts.</p></dd>
+
+<dt>memory_used_bytes</dt>
+<dd><p>Bytes of device memory currently allocated.</p></dd>
+
+<dt>memory_total_bytes</dt>
+<dd><p>Total bytes of device memory available.</p></dd>
+
+
+</dl></dd>
 
 
 <dt id="arg-compute-processes">compute_processes<a class="anchor" aria-label="anchor" href="#arg-compute-processes"></a></dt>
-<dd><p>Data frame with GPU process-level samples.</p></dd>
+<dd><p>Data frame with GPU process-level samples. Expected
+columns include:</p><dl><dt>timestamp</dt>
+<dd><p>Sample timestamp in UTC.</p></dd>
+
+<dt>sampler_pid</dt>
+<dd><p>Root process identifier tracked by the sampler.</p></dd>
+
+<dt>device_index</dt>
+<dd><p>Zero-based GPU device index.</p></dd>
+
+<dt>pid</dt>
+<dd><p>Process identifier reported by NVML as using the GPU.</p></dd>
+
+<dt>tracked_pid</dt>
+<dd><p>Tracked process identifier after filtering to the
+requested root process and, optionally, its descendants.</p></dd>
+
+<dt>is_root_pid</dt>
+<dd><p>Whether <code>tracked_pid</code> is the root process passed
+to the sampler.</p></dd>
+
+<dt>used_gpu_memory_bytes</dt>
+<dd><p>Bytes of GPU memory allocated by the
+process on the sampled device, when reported by NVML.</p></dd>
+
+<dt>gpu_instance_id</dt>
+<dd><p>MIG GPU instance identifier, or <code>NA</code> when it
+does not apply or is not reported.</p></dd>
+
+<dt>compute_instance_id</dt>
+<dd><p>MIG compute instance identifier, or <code>NA</code>
+when it does not apply or is not reported.</p></dd>
+
+
+</dl></dd>
+
+
+<dt id="arg-events">events<a class="anchor" aria-label="anchor" href="#arg-events"></a></dt>
+<dd><p>Data frame with event markers recorded during sampling.</p></dd>
 
 
 <dt id="arg-paths">paths<a class="anchor" aria-label="anchor" href="#arg-paths"></a></dt>

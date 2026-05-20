@@ -11,11 +11,11 @@
 ## Citation
 
 Sales G, Zadenoori M (2026). *CudaMon: Monitor NVIDIA GPU Activity from
-R with NVML*. R package version 0.0.0.9000.
+R with NVML*. R package version 0.99.0.
 
     @Manual{,
       title = {CudaMon: Monitor NVIDIA GPU Activity from R with NVML},
       author = {Gabriele Sales and Mohammad Amin Zadenoori},
       year = {2026},
-      note = {R package version 0.0.0.9000},
+      note = {R package version 0.99.0},
     }

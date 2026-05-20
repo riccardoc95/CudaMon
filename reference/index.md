@@ -19,21 +19,3 @@
 
 - [`CudaMonSession()`](https://riccardoc95.github.io/CudaMon/reference/CudaMonSession.md)
   : Construct a CudaMon session object
-
-## NVML bindings
-
-- [`nvml_is_available()`](https://riccardoc95.github.io/CudaMon/reference/nvml_is_available.md)
-  : Check whether NVML is available
-- [`nvml_device_count()`](https://riccardoc95.github.io/CudaMon/reference/nvml_device_count.md)
-  : Number of NVML‑visible devices
-- [`nvml_list_devices()`](https://riccardoc95.github.io/CudaMon/reference/nvml_list_devices.md)
-  : List NVML-visible devices
-- [`nvml_list_compute_processes()`](https://riccardoc95.github.io/CudaMon/reference/nvml_list_compute_processes.md)
-  : List compute processes active on NVML-visible GPUs
-- [`nvml_get_metrics()`](https://riccardoc95.github.io/CudaMon/reference/nvml_get_metrics.md)
-  : Get metrics for a device
-
-## Internal
-
-- [`nvml_check_status()`](https://riccardoc95.github.io/CudaMon/reference/nvml_check_status.md)
-  : Convert an NVML error code to an R error
