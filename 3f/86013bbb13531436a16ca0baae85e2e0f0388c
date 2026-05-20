@@ -1,0 +1,19 @@
+configure
+  s_274b2d9a95b671::t_ca015ef8eba1db 29,47-49,55,70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "3f86013bbb13531436a16ca0baae85e2e0f0388c",
+  "prompts": {},
+  "sessions": {
+    "s_274b2d9a95b671": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4469-2e70-7df3-b28c-bc6744d43afe",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
