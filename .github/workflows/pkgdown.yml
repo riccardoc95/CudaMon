@@ -36,7 +36,7 @@ jobs:
         run: |
           cat > sidebar.html <<'EOF'
           <div class="pkgdown-sidebar">
-            <p>Documentation site for the CudaMon R package.</p>
+            <p>Documentation site for the CudaMon R package. </p>
           </div>
           EOF
 
