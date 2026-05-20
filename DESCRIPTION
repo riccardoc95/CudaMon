@@ -20,7 +20,9 @@ Description: Monitor NVIDIA GPU activity from R through NVML.
     process information over time, annotate runs with event markers,
     and visualize the resulting session data.
 License: Artistic-2.0
-biocViews: Infrastructure, Visualization
+URL: https://github.com/TODO
+BugReports: https://github.com/TODO/issues
+biocViews: Infrastructure, Visualization, GPU
 SystemRequirements: NVIDIA driver, NVML
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
