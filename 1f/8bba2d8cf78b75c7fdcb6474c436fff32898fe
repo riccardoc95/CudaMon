@@ -1,0 +1,35 @@
+man/cm_vizdf.Rd
+  s_c0a71e418ffdc7::t_6535ed5715295c 33
+R/cm_viz.R
+  s_c0a71e418ffdc7::t_e1105c422c4de0 18,116
+src/nvml.c
+  s_c0a71e418ffdc7::t_e1105c422c4de0 231,258,267
+R/cm_session.R
+  s_c0a71e418ffdc7::t_e1105c422c4de0 18-19
+man/CudaMonSession.Rd
+  s_c0a71e418ffdc7::t_6535ed5715295c 31-32
+inst/scripts/nvml_sampler.R
+  s_c0a71e418ffdc7::t_148e017f535c67 21-25,36-41
+  s_c0a71e418ffdc7::t_32519547c1d7c3 9,11,20,27-35,42-50,52-65,67-69,72-97,99
+R/nvml.R
+  s_c0a71e418ffdc7::t_e1105c422c4de0 163-164,193
+  s_c0a71e418ffdc7::t_148e017f535c67 58,73
+man/cm_plot_usage.Rd
+  s_c0a71e418ffdc7::t_6535ed5715295c 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "1f8bba2d8cf78b75c7fdcb6474c436fff32898fe",
+  "prompts": {},
+  "sessions": {
+    "s_c0a71e418ffdc7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4943-f62a-79e0-9f92-af3601ddf9a4",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
