@@ -15,14 +15,14 @@ Authors@R:
            family = "Ceccaroni",
            role = "cre",
            email="riccardo.ceccaroni@unipd.it",
-           comment = c(ORCID = "0000-0000-0000-0000")))
+           comment = c(ORCID = "0000-0001-5786-2830")))
 Description: Monitor NVIDIA GPU activity from R through NVML.
     The package can collect device-level metrics and active compute
     process information over time, annotate runs with event markers,
     and visualize the resulting session data.
 License: Artistic-2.0
-URL: https://github.com/TODO
-BugReports: https://github.com/TODO/issues
+URL: https://github.com/sales-lab/CudaMon
+BugReports: https://github.com/sales-lab/CudaMon/issues
 biocViews: Infrastructure, Visualization, GPU
 SystemRequirements: NVIDIA driver, NVML
 Encoding: UTF-8
