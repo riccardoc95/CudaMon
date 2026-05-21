@@ -10,6 +10,8 @@ permissions:
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
+    env:
+      R_LIBS_USER: ${{ github.workspace }}/.r-lib
 
     steps:
       - name: Check out repository
@@ -26,11 +28,10 @@ jobs:
             libxml2-dev
 
       - name: Install R package dependencies
-        env:
-          R_LIBS_USER: ${{ github.workspace }}/.r-lib
         run: |
           mkdir -p "${R_LIBS_USER}"
-          Rscript -e '
+          Rscript --vanilla -e '
+            .libPaths(Sys.getenv("R_LIBS_USER"))
             pkgs <- c(
               "pkgdown", "downlit", "evaluate", "ggplot2", "knitr",
               "processx", "rmarkdown", "roxygen2", "testthat"
@@ -40,6 +41,7 @@ jobs:
               repos = "https://cloud.r-project.org",
               lib = Sys.getenv("R_LIBS_USER")
             )
+            stopifnot(requireNamespace("pkgdown", quietly = TRUE))
           '
 
       - name: Write pkgdown sidebar
@@ -51,9 +53,12 @@ jobs:
           EOF
 
       - name: Build pkgdown site
-        env:
-          R_LIBS_USER: ${{ github.workspace }}/.r-lib
-        run: Rscript -e 'pkgdown::build_site(new_process = FALSE)'
+        run: |
+          Rscript --vanilla -e '
+            .libPaths(Sys.getenv("R_LIBS_USER"))
+            print(.libPaths())
+            pkgdown::build_site(new_process = FALSE)
+          '
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
