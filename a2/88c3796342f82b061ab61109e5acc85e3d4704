@@ -1,0 +1,21 @@
+DESCRIPTION
+  s_c0a71e418ffdc7::t_ac575404929a95 37
+vignettes/cudamon-rcollectl.Rmd
+  s_c0a71e418ffdc7::t_ac575404929a95 23-28,35-38,105-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "a288c3796342f82b061ab61109e5acc85e3d4704",
+  "prompts": {},
+  "sessions": {
+    "s_c0a71e418ffdc7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4943-f62a-79e0-9f92-af3601ddf9a4",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
