@@ -17,30 +17,38 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install R from apt
+      - name: Install R and pkgdown dependencies from apt
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             r-base \
             r-base-dev \
+            r-cran-bslib \
+            r-cran-fs \
+            r-cran-ggplot2 \
+            r-cran-knitr \
+            r-cran-pkgdown \
+            r-cran-pkgload \
+            r-cran-processx \
+            r-cran-ragg \
+            r-cran-rmarkdown \
+            r-cran-roxygen2 \
+            r-cran-testthat \
             libcurl4-openssl-dev \
             libssl-dev \
             libxml2-dev
 
-      - name: Install R package dependencies
+      - name: Update pkgdown parser dependencies
         run: |
           mkdir -p "${R_LIBS_USER}"
           Rscript --vanilla -e '
             .libPaths(Sys.getenv("R_LIBS_USER"))
-            pkgs <- c(
-              "pkgdown", "downlit", "evaluate", "ggplot2", "knitr",
-              "processx", "rmarkdown", "roxygen2", "testthat"
-            )
             install.packages(
-              pkgs,
+              c("downlit", "evaluate"),
               repos = "https://cloud.r-project.org",
               lib = Sys.getenv("R_LIBS_USER")
             )
+            .libPaths(c(Sys.getenv("R_LIBS_USER"), .libPaths()))
             stopifnot(requireNamespace("pkgdown", quietly = TRUE))
           '
 
@@ -55,7 +63,7 @@ jobs:
       - name: Build pkgdown site
         run: |
           Rscript --vanilla -e '
-            .libPaths(Sys.getenv("R_LIBS_USER"))
+            .libPaths(c(Sys.getenv("R_LIBS_USER"), .libPaths()))
             print(.libPaths())
             pkgdown::build_site(new_process = FALSE)
           '
