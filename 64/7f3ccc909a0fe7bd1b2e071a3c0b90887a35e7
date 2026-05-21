@@ -1,0 +1,19 @@
+.github/workflows/pkgdown.yml
+  s_c0a71e418ffdc7::t_240ff024f325f4 20,26-36,41,47,51,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "647f3ccc909a0fe7bd1b2e071a3c0b90887a35e7",
+  "prompts": {},
+  "sessions": {
+    "s_c0a71e418ffdc7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4943-f62a-79e0-9f92-af3601ddf9a4",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
