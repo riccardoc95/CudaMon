@@ -15,22 +15,32 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install R and dependencies from apt
+      - name: Install R from apt
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             r-base \
             r-base-dev \
-            r-cran-roxygen2 \
-            r-cran-ggplot2 \
-            r-cran-processx
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libxml2-dev
 
-      - name: Install pkgdown
+      - name: Install R package dependencies
         env:
           R_LIBS_USER: ${{ github.workspace }}/.r-lib
         run: |
           mkdir -p "${R_LIBS_USER}"
-          Rscript -e 'install.packages("pkgdown", repos = "https://cloud.r-project.org", lib = Sys.getenv("R_LIBS_USER"))'
+          Rscript -e '
+            pkgs <- c(
+              "pkgdown", "downlit", "evaluate", "ggplot2", "knitr",
+              "processx", "rmarkdown", "roxygen2", "testthat"
+            )
+            install.packages(
+              pkgs,
+              repos = "https://cloud.r-project.org",
+              lib = Sys.getenv("R_LIBS_USER")
+            )
+          '
 
       - name: Write pkgdown sidebar
         run: |
