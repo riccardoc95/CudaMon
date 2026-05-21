@@ -20,16 +20,22 @@ system metrics collected through `Rcollectl`.
 At the moment the combined plotting helper lives in the package's experimental
 area, so it must be loaded explicitly.
 
+Install `Rcollectl` from Bioconductor before running the examples:
+
+```{r install-rcollectl, eval = FALSE}
+BiocManager::install("Rcollectl")
+```
+
 ## Load packages and helper code
 
 ```{r load-rcollectl, eval = FALSE}
 source(system.file("future", "viz.R", package = "CudaMon"))
 
 if (!requireNamespace("Rcollectl", quietly = TRUE)) {
-    if (!requireNamespace("remotes", quietly = TRUE)) {
-        install.packages("remotes")
-    }
-    remotes::install_github("vjcitn/Rcollectl")
+    stop(
+        "Install Rcollectl with BiocManager::install('Rcollectl')",
+        call. = FALSE
+    )
 }
 
 library(CudaMon)
@@ -96,10 +102,10 @@ p
 source(system.file("future", "viz.R", package = "CudaMon"))
 
 if (!requireNamespace("Rcollectl", quietly = TRUE)) {
-    if (!requireNamespace("remotes", quietly = TRUE)) {
-        install.packages("remotes")
-    }
-    remotes::install_github("vjcitn/Rcollectl")
+    stop(
+        "Install Rcollectl with BiocManager::install('Rcollectl')",
+        call. = FALSE
+    )
 }
 
 library(CudaMon)
