@@ -22,15 +22,15 @@ Plot sampled GPU usage over time
 }
 \examples{
 device_metrics <- data.frame(
-  timestamp = format(Sys.time() + 0:1, tz = "UTC", usetz = TRUE),
-  sampler_pid = Sys.getpid(),
-  device_index = 0L,
-  gpu_utilization_pct = c(10L, 25L),
-  memory_utilization_pct = c(5L, 12L),
-  temperature_c = c(40L, 42L),
-  power_usage_mw = c(50000L, 53000L),
-  memory_used_bytes = c(1e9, 1.2e9),
-  memory_total_bytes = 8e9
+    timestamp = format(Sys.time() + 0:1, tz = "UTC", usetz = TRUE),
+    sampler_pid = Sys.getpid(),
+    device_index = 0L,
+    gpu_utilization_pct = c(10L, 25L),
+    memory_utilization_pct = c(5L, 12L),
+    temperature_c = c(40L, 42L),
+    power_usage_mw = c(50000L, 53000L),
+    memory_used_bytes = c(1e9, 1.2e9),
+    memory_total_bytes = 8e9
 )
 session <- CudaMonSession(device_metrics = device_metrics)
 cm_plot_usage(session)

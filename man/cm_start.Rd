@@ -36,7 +36,7 @@ Start sampling NVML metrics to CSV files
 }
 \examples{
 if (CudaMon:::nvml_is_available() && CudaMon:::nvml_device_count() > 0L) {
-  sampler <- cm_start(period = 1)
-  cm_stop(sampler)
+    sampler <- cm_start(period = 1)
+    cm_stop(sampler)
 }
 }
