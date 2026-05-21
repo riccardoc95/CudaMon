@@ -28,7 +28,8 @@ memory-controller activity, not the fraction of GPU memory allocated.}
 \item{temperature_c}{GPU temperature in degrees Celsius.}
 \item{power_usage_mw}{Instantaneous board power draw in milliwatts.}
 \item{memory_used_bytes}{Bytes of device memory currently allocated.}
-\item{memory_total_bytes}{Total bytes of device memory available.}
+\item{memory_total_device_bytes}{Total bytes of physical device memory
+available.}
 }}
 
 \item{compute_processes}{Data frame with GPU process-level samples. Expected

@@ -30,7 +30,7 @@ device_metrics <- data.frame(
     temperature_c = c(40L, 42L),
     power_usage_mw = c(50000L, 53000L),
     memory_used_bytes = c(1e9, 1.2e9),
-    memory_total_bytes = 8e9
+    memory_total_device_bytes = 8e9
 )
 session <- CudaMonSession(device_metrics = device_metrics)
 cm_vizdf(session)

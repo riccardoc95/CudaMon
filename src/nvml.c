@@ -228,7 +228,7 @@ SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     unsigned int power = NA_INTEGER;
     nvmlMemory_t memory_info = {0};
     double memory_used_bytes = NA_REAL;
-    double memory_total_bytes = NA_REAL;
+    double memory_total_device_bytes = NA_REAL;
 
     result = nvmlDeviceGetUtilizationRates(device, &utilization);
     if (result != NVML_SUCCESS) {
@@ -255,7 +255,7 @@ SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     result = nvmlDeviceGetMemoryInfo(device, &memory_info);
     if (result == NVML_SUCCESS) {
         memory_used_bytes = (double) memory_info.used;
-        memory_total_bytes = (double) memory_info.total;
+        memory_total_device_bytes = (double) memory_info.total;
     }
 
     SEXP data = PROTECT(allocVector(VECSXP, 6));
@@ -264,7 +264,7 @@ SEXP nvml_get_metrics_c(SEXP device_index_sexp) {
     SET_VECTOR_ELT(data, 2, ScalarInteger((int) temp));
     SET_VECTOR_ELT(data, 3, ScalarInteger((int) power));
     SET_VECTOR_ELT(data, 4, ScalarReal(memory_used_bytes));
-    SET_VECTOR_ELT(data, 5, ScalarReal(memory_total_bytes));
+    SET_VECTOR_ELT(data, 5, ScalarReal(memory_total_device_bytes));
     UNPROTECT(1);
     return data;
 }
