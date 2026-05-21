@@ -1,0 +1,48 @@
+vignettes/cudamon-rcollectl.Rmd
+  s_c0a71e418ffdc7::t_a60bc3e8aa6909 5-7
+  s_c0a71e418ffdc7::t_e594d61814235f 10,25,44,54,69,87,95
+  s_c0a71e418ffdc7::t_174484935d416f 12-13,17-18,20-21,29-32,41-42,51-52,66-67,99-102
+R/cm_viz.R
+  s_c0a71e418ffdc7::t_d98e87970b7937 10-18,24-26,28-39,41-43,45-55,57,59-95,108-116,122,124-125,127-136,138-143,145-167,169
+R/cm_stop.R
+  s_c0a71e418ffdc7::t_d98e87970b7937 7-8,12-13,15-16,21-30,32
+  s_c0a71e418ffdc7::t_ee2d13c3c56864 17-20
+R/process_pids.R
+  s_c0a71e418ffdc7::t_d98e87970b7937 8-11,13-19,21-25,27
+R/cm_session.R
+  s_c0a71e418ffdc7::t_ee2d13c3c56864 47-51,74-79,82-87
+  s_c0a71e418ffdc7::t_d98e87970b7937 53-62,67-70,72-73,80-81,88-94,97-108,111
+vignettes/getting-started.Rmd
+  s_c0a71e418ffdc7::t_174484935d416f 17-18,33-34,38-40,48-49,60-62,78-79,106-107
+  s_c0a71e418ffdc7::t_a60bc3e8aa6909 5-7
+  s_c0a71e418ffdc7::t_2e3939404edd91 10,42,51,64,81,99,112,134
+R/nvml.R
+  s_c0a71e418ffdc7::t_d98e87970b7937 12-14,16-17,19-21,23-24,31-35,43,51-60,63-78,89-95,98-107,109-130,132-134,136-139,142,145,167-193
+  s_c0a71e418ffdc7::t_ee2d13c3c56864 140-141
+R/cm_start.R
+  s_c0a71e418ffdc7::t_d98e87970b7937 14-15,26,30,41,49-50,52,58-76,82-113,117,119-120,122-126,128-129,133,136,139-144,150-167
+  s_c0a71e418ffdc7::t_56aadda5febd5a 131-132,134,145-146
+  s_c0a71e418ffdc7::t_3d277c4d883313 130,135,147
+  s_c0a71e418ffdc7::t_ee2d13c3c56864 19-24,27-29,32-40,43-48,53-57,77-81,116
+R/cm_parser.R
+  s_c0a71e418ffdc7::t_d98e87970b7937 8-12,16-25,31-35,41-69
+  s_c0a71e418ffdc7::t_ee2d13c3c56864 26-30,37-40
+R/cm_timestamp.R
+  s_c0a71e418ffdc7::t_d98e87970b7937 8-10,14-16,18-20,22-27,29-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "0f55c8847c74f440cec89c8b020e8a1997a1d722",
+  "prompts": {},
+  "sessions": {
+    "s_c0a71e418ffdc7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4943-f62a-79e0-9f92-af3601ddf9a4",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Riccardo Ceccaroni <riccardo.ceccaroni.95@gmail.com>"
+    }
+  }
+}
