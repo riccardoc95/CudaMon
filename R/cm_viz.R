@@ -56,13 +56,22 @@ cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
 
     tm <- as.POSIXct(df$timestamp, tz = "UTC")
 
-    rbind(
+    plot_df <- rbind(
         data.frame(
             tm = tm,
             xtype = "GPU_MEM",
             pos = "top",
             value = as.double(df$gpu_utilization_pct),
             type = "GPU active (%)",
+            device_index = as.integer(df$device_index),
+            stringsAsFactors = FALSE
+        ),
+        data.frame(
+            tm = tm,
+            xtype = "GPU_MEM",
+            pos = "mid",
+            value = as.double(df$memory_utilization_pct),
+            type = "GPU memory activity (%)",
             device_index = as.integer(df$device_index),
             stringsAsFactors = FALSE
         ),
@@ -94,6 +103,12 @@ cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
             stringsAsFactors = FALSE
         )
     )
+    has_value <- stats::ave(
+        !is.na(plot_df$value),
+        plot_df$type,
+        FUN = any
+    )
+    plot_df[has_value, , drop = FALSE]
 }
 
 #' Plot sampled GPU usage over time
