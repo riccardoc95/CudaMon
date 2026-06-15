@@ -4,7 +4,16 @@
 \alias{cm_plot_usage}
 \title{Plot sampled GPU usage over time}
 \usage{
-cm_plot_usage(x, tz = "UTC", device_index = NULL)
+cm_plot_usage(
+  x,
+  tz = "UTC",
+  device_index = NULL,
+  show_points = TRUE,
+  show_lines = TRUE,
+  show_events = TRUE,
+  event_labels = c("none", "outside", "inside"),
+  event_color_by_step = TRUE
+)
 }
 \arguments{
 \item{x}{A \code{CudaMonSession} object returned by \code{cm_parser()}.}
@@ -13,6 +22,16 @@ cm_plot_usage(x, tz = "UTC", device_index = NULL)
 
 \item{device_index}{Optional integer GPU index. If \code{NULL}, include all
 sampled devices.}
+
+\item{show_points}{Logical. Show sampled points.}
+
+\item{show_lines}{Logical. Show continuous lines.}
+
+\item{show_events}{Logical. Show event markers.}
+
+\item{event_labels}{One of \code{"inside"}, \code{"outside"}, or \code{"none"}.}
+
+\item{event_color_by_step}{Logical. Color event markers by step.}
 }
 \value{
 A ggplot object with one facet per metric.
