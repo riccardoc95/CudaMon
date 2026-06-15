@@ -108,6 +108,11 @@ cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
 #' @param tz Time zone used to parse timestamps.
 #' @param device_index Optional integer GPU index. If `NULL`, include all
 #'   sampled devices.
+#' @param show_points Logical. Show sampled points.
+#' @param show_lines Logical. Show continuous lines.
+#' @param show_events Logical. Show event markers.
+#' @param event_labels One of `"inside"`, `"outside"`, or `"none"`.
+#' @param event_color_by_step Logical. Color event markers by step.
 #' @return A ggplot object with one facet per metric.
 #' @examples
 #' device_metrics <- data.frame(
@@ -124,52 +129,167 @@ cm_vizdf <- function(x, tz = "UTC", device_index = NULL) {
 #' session <- CudaMonSession(device_metrics = device_metrics)
 #' cm_plot_usage(session)
 #' @export
-cm_plot_usage <- function(x, tz = "UTC", device_index = NULL) {
+cm_plot_usage <- function(
+    x,
+    tz = "UTC",
+    device_index = NULL,
+    show_points = TRUE,
+    show_lines = TRUE,
+    show_events = TRUE,
+    event_labels = c("none", "outside", "inside"),
+    event_color_by_step = TRUE
+) {
+  event_labels <- match.arg(event_labels)
+
   plot_df <- cm_vizdf(x, tz = tz, device_index = device_index)
 
-  # Check: I don't know if it is the best way to avoid R CMD check warnings
-  tm <- value <- type <- label_y <- step <- NULL
+  has_device_index <- "device_index" %in% names(plot_df)
 
-  p <- ggplot2::ggplot(
-    plot_df,
-    ggplot2::aes(x = tm, y = value)
-  ) +
-    ggplot2::geom_point(na.rm = TRUE) +
-    ggplot2::facet_grid(ggplot2::vars(type), scales = "free") +
+  if (has_device_index) {
+    base_aes <- ggplot2::aes(
+      x = .data$tm,
+      y = .data$value,
+      color = factor(.data$device_index)
+    )
+  } else {
+    base_aes <- ggplot2::aes(
+      x = .data$tm,
+      y = .data$value
+    )
+  }
+
+  p <- ggplot2::ggplot(plot_df, base_aes)
+
+  if (show_lines) {
+    if (has_device_index) {
+      p <- p +
+        ggplot2::geom_line(
+          ggplot2::aes(group = interaction(.data$type, .data$device_index)),
+          linewidth = 0.6,
+          alpha = 0.85,
+          na.rm = TRUE
+        )
+    } else {
+      p <- p +
+        ggplot2::geom_line(
+          linewidth = 0.6,
+          alpha = 0.85,
+          na.rm = TRUE
+        )
+    }
+  }
+
+  if (show_points) {
+    p <- p +
+      ggplot2::geom_point(
+        size = 1.2,
+        alpha = 0.7,
+        na.rm = TRUE
+      )
+  }
+
+  p <- p +
+    ggplot2::facet_grid(
+      ggplot2::vars(.data$type),
+      scales = "free_y"
+    ) +
     ggplot2::scale_x_datetime(
       timezone = tz,
       date_labels = "%H:%M:%S"
+    ) +
+    ggplot2::labs(
+      x = NULL,
+      y = NULL,
+      color = "GPU"
+    ) +
+    ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      panel.grid.minor = ggplot2::element_blank(),
+      strip.text.y = ggplot2::element_text(angle = 0),
+      axis.text.x = ggplot2::element_text(angle = 30, hjust = 1)
     )
 
   events_df <- x$events
-  if (is.data.frame(events_df) && nrow(events_df) > 0L &&
-    "timestamp" %in% names(events_df) && "step" %in% names(events_df)) {
+
+  has_events <- is.data.frame(events_df) &&
+    nrow(events_df) > 0L &&
+    all(c("timestamp", "step") %in% names(events_df))
+
+  if (show_events && has_events) {
     events_df <- events_df[, c("timestamp", "step"), drop = FALSE]
     events_df$tm <- as.POSIXct(events_df$timestamp, tz = "UTC")
-    events_df$label_y <- Inf
+    events_df$step <- factor(events_df$step)
+
+    if (event_color_by_step) {
+      vline_aes <- ggplot2::aes(
+        xintercept = .data$tm,
+        color = .data$step
+      )
+
+      label_aes <- ggplot2::aes(
+        x = .data$tm,
+        y = Inf,
+        label = .data$step,
+        color = .data$step
+      )
+    } else {
+      vline_aes <- ggplot2::aes(xintercept = .data$tm)
+
+      label_aes <- ggplot2::aes(
+        x = .data$tm,
+        y = Inf,
+        label = .data$step
+      )
+    }
 
     p <- p +
       ggplot2::geom_vline(
         data = events_df,
-        ggplot2::aes(xintercept = tm),
+        mapping = vline_aes,
         inherit.aes = FALSE,
         linetype = "dashed",
-        color = "firebrick"
-      ) +
-      ggplot2::geom_text(
-        data = events_df,
-        ggplot2::aes(
-          x = tm,
-          y = label_y,
-          label = step
-        ),
-        inherit.aes = FALSE,
-        angle = 90,
-        vjust = 1.2,
-        hjust = 1,
-        color = "firebrick",
-        size = 3
+        linewidth = 0.35,
+        alpha = 0.75
       )
+
+    if (event_labels == "inside") {
+      p <- p +
+        ggplot2::geom_text(
+          data = events_df,
+          mapping = label_aes,
+          inherit.aes = FALSE,
+          angle = 90,
+          vjust = 1.2,
+          hjust = 1,
+          size = 3,
+          alpha = 0.9
+        )
+    }
+
+    if (event_labels == "outside") {
+      p <- p +
+        ggplot2::geom_label(
+          data = events_df,
+          mapping = label_aes,
+          inherit.aes = FALSE,
+          angle = 90,
+          vjust = 1.1,
+          hjust = 1,
+          size = 2.8,
+          label.size = 0.2,
+          fill = "white",
+          alpha = 0.9
+        ) +
+        ggplot2::coord_cartesian(clip = "off") +
+        ggplot2::theme(
+          plot.margin = ggplot2::margin(5.5, 35, 5.5, 5.5)
+        )
+    }
+
+    if (!event_color_by_step) {
+      p <- p +
+        ggplot2::guides(color = "none")
+    }
   }
 
   p
